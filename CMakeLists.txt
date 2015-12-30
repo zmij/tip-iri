@@ -23,8 +23,33 @@ else()
     set(PROJECT_VERSION ${_pversion})
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+# Options
+option(BUILD_TESTS "Build tests for the project" ON)
+
+set(BOOST_COMPONENTS
+    system
+    thread
+)
+
+find_package(Boost 1.58 COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${Boost_INCLUDE_DIR})
 add_definitions("-std=c++11")
+
+set(TIP_IRI_LIB ${PROJECT_PREFIX}-iri)
 
 add_subdirectory(include/tip)
 add_subdirectory(src)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
+get_directory_property(has_parent PARENT_DIRECTORY)
+
+if (has_parent)
+    set(TIP_IRI_LIB ${PROJECT_PREFIX}-iri PARENT_SCOPE)
+    set(TIP_IRI_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include PARENT_SCOPE)
+endif()
+
