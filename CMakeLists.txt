@@ -23,6 +23,9 @@ else()
     set(PROJECT_VERSION ${_pversion})
 endif()
 
+# Options
+option(BUILD_TESTS "Build tests for the project" ON)
+
 set(BOOST_COMPONENTS
     system
     thread
@@ -37,6 +40,11 @@ set(TIP_IRI_LIB ${PROJECT_PREFIX}-iri)
 
 add_subdirectory(include/tip)
 add_subdirectory(src)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
 
 get_directory_property(has_parent PARENT_DIRECTORY)
 
