@@ -9,6 +9,9 @@
 #include <grammar/grammar_parse_test.hpp>
 #include <tip/iri/grammar/iri_parse.hpp>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
 GRAMMAR_TEST(tip::iri::grammar::parse::sub_delims_grammar, SubDelims,
 		::testing::Values("!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "="),
 		::testing::Values(":", "a", "4", "±", "§", "-", "_")
@@ -524,3 +527,5 @@ GRAMMAR_PARSE_TEST(iri_grammar, IRI, iri,
 			})
 	)
 );
+
+#pragma GCC diagnostic pop
