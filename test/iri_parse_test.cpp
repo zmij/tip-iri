@@ -237,19 +237,19 @@ GRAMMAR_TEST(ipv6_grammar_int, IP6_3,
 typedef std::array< std::uint16_t, 8> ipv6;
 GRAMMAR_PARSE_TEST(ipv6_grammar_int, IP6, ipv6,
 		::testing::Values(
-			ParseIP6::make_test_data("1:2:3:4:5:6:7:8", {1, 2, 3, 4, 5, 6, 7, 8}),
-			ParseIP6::make_test_data("1:2:3:4:5:6:7::", {1, 2, 3, 4, 5, 6, 7, 0}),
-			ParseIP6::make_test_data("1:2:3:4:5:6::8", {1, 2, 3, 4, 5, 6, 0, 8}),
-			ParseIP6::make_test_data("1:2:3:4:5::7:8", {1, 2, 3, 4, 5, 0, 7, 8}),
-			ParseIP6::make_test_data("1:2:3:4::6:7:8", {1, 2, 3, 4, 0, 6, 7, 8}),
-			ParseIP6::make_test_data("1:2:3::5:6:7:8", {1, 2, 3, 0, 5, 6, 7, 8}),
-			ParseIP6::make_test_data("1:2::4:5:6:7:8", {1, 2, 0, 4, 5, 6, 7, 8}),
-			ParseIP6::make_test_data("1::3:4:5:6:7:8", {1, 0, 3, 4, 5, 6, 7, 8}),
-			ParseIP6::make_test_data("::2:3:4:5:6:7:8", {0, 2, 3, 4, 5, 6, 7, 8}),
+			ParseIP6::make_test_data("1:2:3:4:5:6:7:8", {{1, 2, 3, 4, 5, 6, 7, 8}}),
+			ParseIP6::make_test_data("1:2:3:4:5:6:7::", {{1, 2, 3, 4, 5, 6, 7, 0}}),
+			ParseIP6::make_test_data("1:2:3:4:5:6::8", {{1, 2, 3, 4, 5, 6, 0, 8}}),
+			ParseIP6::make_test_data("1:2:3:4:5::7:8", {{1, 2, 3, 4, 5, 0, 7, 8}}),
+			ParseIP6::make_test_data("1:2:3:4::6:7:8", {{1, 2, 3, 4, 0, 6, 7, 8}}),
+			ParseIP6::make_test_data("1:2:3::5:6:7:8", {{1, 2, 3, 0, 5, 6, 7, 8}}),
+			ParseIP6::make_test_data("1:2::4:5:6:7:8", {{1, 2, 0, 4, 5, 6, 7, 8}}),
+			ParseIP6::make_test_data("1::3:4:5:6:7:8", {{1, 0, 3, 4, 5, 6, 7, 8}}),
+			ParseIP6::make_test_data("::2:3:4:5:6:7:8", {{0, 2, 3, 4, 5, 6, 7, 8}}),
 
-			ParseIP6::make_test_data("::8", {0, 0, 0, 0, 0, 0, 0, 8}),
-			ParseIP6::make_test_data("1::", {1, 0, 0, 0, 0, 0, 0, 0}),
-			ParseIP6::make_test_data("1::8", {1, 0, 0, 0, 0, 0, 0, 8})
+			ParseIP6::make_test_data("::8", {{0, 0, 0, 0, 0, 0, 0, 8}}),
+			ParseIP6::make_test_data("1::", {{1, 0, 0, 0, 0, 0, 0, 0}}),
+			ParseIP6::make_test_data("1::8", {{1, 0, 0, 0, 0, 0, 0, 8}})
 		)
 );
 
