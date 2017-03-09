@@ -30,3 +30,8 @@
 # Build tree
 *build
 
+# Eclipse settings
+*.settings
+.cproject
+.project
+
