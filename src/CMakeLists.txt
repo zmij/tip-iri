@@ -5,11 +5,13 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(iri_lib_SRCS
-    iri.cpp)
+    iri.cpp
+    ip_address.cpp
+)
 
 add_library(${TIP_IRI_LIB} SHARED ${iri_lib_SRCS})
 set_target_properties(
-    ${TIP_IRI_LIB} 
+    ${TIP_IRI_LIB}
     PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 0
