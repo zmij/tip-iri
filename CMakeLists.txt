@@ -41,6 +41,13 @@ add_definitions("-std=c++14")
 
 set(TIP_${LIB_NAME}_LIB ${PROJECT_PREFIX}-${lib_name})
 
+if (NOT METAPUSHKIN_FOUND)
+    add_subdirectory(lib/meta)
+endif()
+
+message(STATUS "Metapushkin include dir ${METAPUSHKIN_INCLUDE_DIRS}")
+include_directories(${METAPUSHKIN_INCLUDE_DIRS})
+
 add_subdirectory(include/tip)
 add_subdirectory(src)
 

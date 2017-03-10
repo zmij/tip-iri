@@ -11,9 +11,15 @@
 #include <iosfwd>
 #include <string>
 #include <cstdint>
+#include <stdexcept>
+
+#include <tip/iri/detail/char_class.hpp>
+#include <tip/iri/detail/iri_part.hpp>
 
 namespace tip {
 namespace iri {
+
+inline namespace v2 {
 
 struct ipv4_address {
     using repr = ::std::uint32_t;
@@ -44,12 +50,6 @@ struct ipv4_address {
 operator << (::std::ostream& os, ipv4_address const& val);
 ::std::string
 to_string(ipv4_address const& val);
-
-inline constexpr ipv4_address
-operator "" _ipv4(char const* str, ::std::size_t sz)
-{
-    return ipv4_address{str};
-}
 
 inline constexpr ipv4_address
 operator << (ipv4_address addr, ::std::size_t bits)
@@ -187,34 +187,6 @@ operator "" _ipv6(char const* str, ::std::size_t sz)
     return ipv6_address{str};
 }
 
-constexpr
-ipv4_address::ipv4_address(char const* str)
-    : data{0}
-{
-    ::std::uint32_t curr{0};
-    ::std::size_t curr_offset{ 24 };
-    while (*str != 0) {
-        if (*str == '.') {
-            if (curr_offset == 0)
-                throw ::std::runtime_error{ "Unexpected symbol in IPv4 literal" };
-            data |= (curr << curr_offset);
-            curr = 0;
-            curr_offset -= 8;
-        } else if ( '0' <= *str && *str <= '9' ) {
-            curr *= 10;
-            curr += (*str - '0');
-            if (curr > 255)
-                throw ::std::runtime_error{ "Invalid IPv4 octet " + ::std::to_string(curr) };
-        } else {
-            throw ::std::runtime_error{ "Unexpected symbol in IPv4 literal" };
-        }
-        ++str;
-    }
-    if (curr_offset > 0)
-        throw ::std::runtime_error{ "Unexpected IPv4 literal end" };
-    data |= curr;
-}
-
 namespace detail {
 
 constexpr ::std::int32_t
@@ -327,9 +299,61 @@ operator | (ipv6_address const& lhs, ipv6_address const& rhs)
     return res;
 }
 
+inline constexpr ipv4_address
+operator "" _ipv4(char const* str, ::std::size_t sz)
+{
+    return ipv4_address{str};
+}
+
+constexpr
+ipv4_address::ipv4_address(char const* str)
+    : data{0}
+{
+    ::std::uint32_t curr{0};
+    ::std::size_t curr_offset{ 24 };
+    while (*str != 0) {
+        if (*str == '.') {
+            if (curr_offset == 0)
+                throw ::std::runtime_error{ "Unexpected symbol in IPv4 literal" };
+            data |= (curr << curr_offset);
+            curr = 0;
+            curr_offset -= 8;
+        } else if ( '0' <= *str && *str <= '9' ) {
+            curr *= 10;
+            curr += (*str - '0');
+            if (curr > 255)
+                throw ::std::runtime_error{ "Invalid IPv4 octet " + ::std::to_string(curr) };
+        } else {
+            throw ::std::runtime_error{ "Unexpected symbol in IPv4 literal" };
+        }
+        ++str;
+    }
+    if (curr_offset > 0)
+        throw ::std::runtime_error{ "Unexpected IPv4 literal end" };
+    data |= curr;
+}
+
+template <>
+struct parser<iri_part::ipv4_address> : detail::parser_base<iri_part::ipv4_address> {
+    constexpr parser()
+        : octet_{0}, offset_{24}, value_{}
+    {
+    }
+    constexpr parser_state
+    feed_char(char c)
+    {
+        return state;
+    }
+private:
+    ipv4_address::repr  octet_;
+    ::std::size_t       offset_;
+    ipv4_address        value_;
+};
+
 constexpr ipv4_address const ipv4_localhost{ "127.0.0.1"_ipv4 };
 constexpr ipv6_address const ipv6_localhost({}, { 1 });
 
+} /* namespace v2 */
 
 }  /* namespace iri */
 }  /* namespace tip */

@@ -13,6 +13,8 @@
 namespace tip {
 namespace iri {
 
+inline namespace v2 {
+
 ::std::ostream&
 operator << (::std::ostream& os, ipv4_address const& val)
 {
@@ -109,6 +111,8 @@ to_string(ipv6_address const& val)
     os << val;
     return os.str();
 }
+
+} /* namespace v2 */
 
 
 }  /* namespace iri */
