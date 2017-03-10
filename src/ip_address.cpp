@@ -112,6 +112,47 @@ to_string(ipv6_address const& val)
     return os.str();
 }
 
+ipv6_address::ipv6_address(char const* str)
+    : data{0}
+{
+//    using element = ipv6_address::element;
+//
+//    element head[ ipv6_address::size ] {0};
+//    ::std::size_t head_size{0};
+//    element tail[ ipv6_address::size ] {0};
+//    ::std::size_t tail_size{0};
+//
+//    ::std::int32_t  curr_hextet{0};
+//    // track classifications to find out if the number contains decimal digits only
+//    char_type       curr_chars{ char_type::none };
+//    //char            prev_char;
+//
+//    ::std::size_t   hextet_cnt{0};
+//
+//    auto p = str;
+//    while (*p != 0) {
+//        auto cls = char_classification::classify(*p);
+//        if (any(cls & char_type::xdigit)) {
+//            if (curr_chars == char_type::none) {
+//                curr_chars = cls;
+//            } else {
+//                curr_chars = curr_chars & cls;
+//            }
+//            curr_hextet <<= 8;
+//            curr_hextet += detail::digit_value(*p);
+//        } else {
+//            if (*p == ':') {
+//
+//            } else if (*p == '.') {
+//                // previous hextet was actually the first decimal octet of IPv4 address
+//            } else {
+//
+//            }
+//        }
+//    }
+}
+
+
 } /* namespace v2 */
 
 

@@ -6,7 +6,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <tip/iri/ip_address.hpp>
+#include <tip/iri/detail/ip_address_parsers.hpp>
 #include <iostream>
 #include <string>
 
