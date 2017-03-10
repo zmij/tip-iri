@@ -1,7 +1,7 @@
-#	/test/CMakeLists.txt
-#	
-#	@author zmij
-#	@date Dec 30, 2015
+#    /test/CMakeLists.txt
+#
+#    @author zmij
+#    @date Dec 30, 2015
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -20,6 +20,7 @@ set(iri_test_SRCS
 #    iri_parse_test.cpp
 #    iri_path_test.cpp
     char_classes.cpp
+    int_parser_test.cpp
     ip_address_io.cpp
 )
 

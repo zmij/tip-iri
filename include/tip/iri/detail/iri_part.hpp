@@ -9,6 +9,7 @@
 #define TIP_IRI_DETAIL_IRI_PART_HPP_
 
 #include <tip/iri/detail/char_classes.hpp>
+#include <tip/iri/detail/parser_state_base.hpp>
 
 namespace tip {
 namespace iri {
@@ -68,7 +69,7 @@ any(iri_part p)
 }
 
 template < typename Charset, iri_part P >
-using iri_part_class = char_class< Charset, iri_part, P, iri_part::none >;
+using iri_part_class = character_class< Charset, iri_part, P, iri_part::none >;
 
 namespace char_classes {
 
@@ -137,63 +138,16 @@ struct part_traits : detail::part_traits_base<P> {};
 
 namespace detail {
 
-template < iri_part P >
-struct parser_base {
-    enum class parser_state {
-        empty,
-        in_progress,
-        done,
-        failed
-    };
-
+template < typename Final, iri_part P >
+struct parser_base : parser_state_base< Final > {
     using traits_type   = part_traits<P>;
     using type          = typename traits_type::type;
-
-    constexpr parser_base()
-        : state{parser_state::empty} {}
-
-    constexpr bool
-    empty() const
-    { return state == parser_state::empty; }
-
-    constexpr bool
-    done() const
-    { return state == parser_state::done; }
-
-    constexpr bool
-    failed() const
-    { return state == parser_state::failed; }
-
-    constexpr bool
-    want_more() const
-    { return state < parser_state::done; }
-protected:
-    constexpr void
-    start()
-    {
-        if (state == parser_state::empty)
-            state = parser_state::in_progress;
-    }
-    constexpr void
-    finish()
-    {
-        if (state == parser_state::in_progress)
-            state = parser_state::done;
-    }
-    constexpr void
-    fail()
-    {
-        if (state == parser_state::in_progress)
-            state = parser_state::failed;
-    }
-
-    parser_state    state;
 };
 
 } /* namespace detail */
 
 template < iri_part P >
-struct parser : detail::parser_base<P> {};
+struct parser : detail::parser_base< parser<P>, P> {};
 
 //
 //template <>

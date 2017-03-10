@@ -44,7 +44,7 @@ struct binary_or<T> {
 } /* namespace detail */
 
 template < typename Charset, typename T, T Value, T Default = T{} >
-struct char_class {
+struct character_class {
     using charset = Charset;
     template < char C >
     struct class_of : detail::conditional_c<
@@ -53,17 +53,21 @@ struct char_class {
 
 namespace detail {
 
-template < typename T, typename ... Class >
-struct char_class_table_impl;
+template < ::std::size_t Idx, typename T, typename ... Classes >
+struct nth_classification {
+    using type = typename binary_or< T, Classes::template class_of<Idx>::value... >::type;
+};
 
-template < ::std::size_t ... Indexes, typename ... Charset, typename T, T ... Mapped >
-struct char_class_table_impl< ::std::integer_sequence<::std::size_t, Indexes ...>,
-        char_class< Charset, T, Mapped > ... > {
+template < typename Index, typename MapTo, typename ... Class >
+struct character_class_table_impl;
+
+template < ::std::size_t ... Indexes, typename T, typename ... Classes >
+struct character_class_table_impl< ::std::integer_sequence<::std::size_t, Indexes ...>,
+        T, Classes...> {
     using value_type    = T;
 
     template < ::std::size_t Idx >
-    using nth_value = typename detail::binary_or< value_type,
-            char_class< Charset, value_type, Mapped >::template class_of< Idx >::value... >::type;
+    using nth_value = typename nth_classification<Idx, value_type, Classes...>::type;
     using type = ::std::integer_sequence<value_type, nth_value<Indexes>::value...>;
     static constexpr value_type value[] = {
         nth_value< Indexes >::value...
@@ -74,15 +78,17 @@ struct char_class_table_impl< ::std::integer_sequence<::std::size_t, Indexes ...
     { return value[c]; }
 };
 
-template < ::std::size_t ... Indexes, typename ... Charset, typename T, T ... Mapped >
-constexpr T char_class_table_impl<
+template < ::std::size_t ... Indexes, typename T, typename ... Classes >
+constexpr T character_class_table_impl<
                 ::std::integer_sequence<::std::size_t, Indexes ...>,
-                char_class< Charset, T, Mapped > ... >::value[];
+                T, Classes... >::value[];
 
 } /* namespace detail */
 
-template < ::std::size_t Size, typename ... Class >
-struct char_classification_table : detail::char_class_table_impl<::std::make_index_sequence<Size>, Class...> {};
+template < ::std::size_t Size, typename MapTo, typename ... Class >
+struct character_class_table :
+        detail::character_class_table_impl<::std::make_index_sequence<Size>,
+                MapTo, Class...> {};
 
 
 
