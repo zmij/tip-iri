@@ -21,6 +21,7 @@ set(iri_test_SRCS
 #    iri_path_test.cpp
     char_classes.cpp
     int_parser_test.cpp
+    literal_parser_test.cpp
     hex_parser_test.cpp
     ip_address_io.cpp
     authority_parse_test.cpp

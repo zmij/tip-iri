@@ -562,6 +562,67 @@ private:
     hex_parser      hex_;
 };
 
+template < char const* Str >
+struct literal_parser
+        : detail::parser_state_base<literal_parser<Str>> {
+    using value_type        = ::std::string;
+    using string_literal    = ::psst::meta::make_char_literal_s<Str>;
+
+    using base_type         = detail::parser_state_base<literal_parser< Str >>;
+    using parser_state      = detail::parser_state;
+    using feed_result       = detail::feed_result;
+
+    constexpr literal_parser() : current_{ string_literal::static_begin() } {}
+
+    using base_type::want_more;
+    using base_type::start;
+    using base_type::fail;
+
+    feed_result
+    feed_char(char c)
+    {
+        bool consumed = false;
+        if (want_more()) {
+            start();
+            if (c != *current_) {
+                return { fail(), consumed };
+            }
+            if (++current_ == string_literal::static_end()) {
+                finish();
+            }
+        }
+        return { state, consumed };
+    }
+
+    parser_state
+    finish()
+    {
+        if (want_more()) {
+            if (current_ != string_literal::static_end())
+                return fail();
+            base_type::finish();
+        }
+        return state;
+    }
+
+    void
+    clear()
+    {
+        current_ = string_literal::static_begin();
+        base_type::reset();
+    }
+
+    ::std::string const&
+    value() const
+    {
+        static ::std::string _val{ string_literal::static_begin(), string_literal::static_end() };
+        return _val;
+    }
+private:
+    using base_type::state;
+    char const* current_;
+};
+
 } /* namespace v2 */
 } /* namespace iri */
 } /* namespace tip */
