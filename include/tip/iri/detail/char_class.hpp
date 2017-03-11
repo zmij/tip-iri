@@ -562,17 +562,22 @@ private:
     hex_parser      hex_;
 };
 
-template < char const* Str >
-struct literal_parser
-        : detail::parser_state_base<literal_parser<Str>> {
-    using value_type        = ::std::string;
-    using string_literal    = ::psst::meta::make_char_literal_s<Str>;
+namespace detail {
 
-    using base_type         = detail::parser_state_base<literal_parser< Str >>;
+template < typename Final, typename T >
+struct literal_parser_impl;
+
+template < typename Final, char ... Chars >
+struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Chars...>>
+    : detail::parser_state_base<Final> {
+
+    using value_type        = ::std::string;
+    using string_literal    = ::psst::meta::char_sequence_literal<Chars...>;
+    using base_type         = detail::parser_state_base<Final>;
     using parser_state      = detail::parser_state;
     using feed_result       = detail::feed_result;
 
-    constexpr literal_parser() : current_{ string_literal::static_begin() } {}
+    constexpr literal_parser_impl() : current_{ string_literal::static_begin() } {}
 
     using base_type::want_more;
     using base_type::start;
@@ -615,13 +620,76 @@ struct literal_parser
     ::std::string const&
     value() const
     {
-        static ::std::string _val{ string_literal::static_begin(), string_literal::static_end() };
+        static ::std::string const _val{ string_literal::static_begin(), string_literal::static_end() };
         return _val;
     }
 private:
     using base_type::state;
     char const* current_;
 };
+
+template < typename Final, char Char >
+struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Char>>
+    : detail::parser_state_base<Final> {
+
+    using value_type        = ::std::string;
+    using base_type         = detail::parser_state_base<Final>;
+    using parser_state      = detail::parser_state;
+    using feed_result       = detail::feed_result;
+
+    static constexpr char check_value = Char;
+
+    using base_type::want_more;
+    using base_type::start;
+    using base_type::fail;
+
+    feed_result
+    feed_char(char c)
+    {
+        if (want_more()) {
+            if (c != check_value)
+                return { fail(), false };
+            return {base_type::finish(), true};
+        }
+        return { state, false };
+    }
+
+    parser_state
+    finish()
+    {
+        if (want_more())
+            return fail();
+        return state;
+    }
+
+    void
+    clear()
+    {
+        base_type::reset();
+    }
+
+    value_type const&
+    value() const
+    {
+        static ::std::string const _val(check_value);
+        return _val;
+    }
+private:
+    using base_type::state;
+};
+
+} /* namespace detail */
+
+
+template < char ... Chars >
+struct literal_parser
+    : detail::literal_parser_impl<
+              literal_parser<Chars...>, ::psst::meta::char_sequence_literal<Chars...>> {};
+
+template < char const* Str >
+struct literal_str_parser
+        : detail::literal_parser_impl<
+              literal_str_parser<Str>, ::psst::meta::make_char_literal_s<Str>> {};
 
 } /* namespace v2 */
 } /* namespace iri */

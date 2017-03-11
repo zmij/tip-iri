@@ -22,8 +22,8 @@ constexpr char lorem[]      = "lorem";
 
 TEST(Parser, LiteralParser)
 {
-    using slash_parser = literal_parser< slashslash >;
-    using lorem_parser = literal_parser< lorem >;
+    using slash_parser = literal_str_parser< slashslash >;
+    using lorem_parser = literal_str_parser< lorem >;
 
     slash_parser sp;
     EXPECT_TRUE(sp.empty());
@@ -56,6 +56,46 @@ TEST(Parser, LiteralParser)
     EXPECT_FALSE(lp.done());
     EXPECT_TRUE(lp.failed());
     EXPECT_FALSE(lp.want_more());
+}
+
+TEST(Parser, LiteralSeqParser)
+{
+    using slash_parser = literal_parser< '/', '/' >;
+    slash_parser sp;
+    EXPECT_TRUE(sp.empty());
+    EXPECT_TRUE(sp.want_more());
+    sp.parse(slashslash, slashslash + 2);
+    EXPECT_TRUE(sp.done());
+    EXPECT_FALSE(sp.failed());
+    EXPECT_FALSE(sp.want_more());
+
+    sp.clear();
+    EXPECT_TRUE(sp.empty());
+    EXPECT_TRUE(sp.want_more());
+    sp.parse(lorem, lorem + 5);
+    EXPECT_FALSE(sp.done());
+    EXPECT_TRUE(sp.failed());
+    EXPECT_FALSE(sp.want_more());
+}
+
+TEST(Parser, LiteralCharParser)
+{
+    using slash_parser = literal_parser< '/' >;
+    slash_parser sp;
+    EXPECT_TRUE(sp.empty());
+    EXPECT_TRUE(sp.want_more());
+    sp.parse(slashslash, slashslash + 2);
+    EXPECT_TRUE(sp.done());
+    EXPECT_FALSE(sp.failed());
+    EXPECT_FALSE(sp.want_more());
+
+    sp.clear();
+    EXPECT_TRUE(sp.empty());
+    EXPECT_TRUE(sp.want_more());
+    sp.parse(lorem, lorem + 5);
+    EXPECT_FALSE(sp.done());
+    EXPECT_TRUE(sp.failed());
+    EXPECT_FALSE(sp.want_more());
 }
 
 
