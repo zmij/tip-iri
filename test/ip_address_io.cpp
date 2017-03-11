@@ -155,6 +155,37 @@ PARSER_TEST(ipv6_parser, IPv6,
     )
 );
 
+using ip_lit_parser = parser<iri_part::ip_literal>;
+PARSER_TEST(ip_lit_parser, IPLiteral,
+    ::testing::Values(
+        ParseIPLiteral::make_test_data( "[::]",   ipv6_address{} ),
+        ParseIPLiteral::make_test_data( "[::1]", ipv6_localhost ),
+        ParseIPLiteral::make_test_data( "[1:2:3:4:5:6:7:8]",    ipv6_address{ 1, 2, 3, 4, 5, 6, 7, 8 } ),
+        //ParseIPv6::make_test_data( "1:2:3:4:5:6:7::",   ipv6_address{ 1, 2, 3, 4, 5, 6, 7, 0 } ),
+        ParseIPLiteral::make_test_data( "[1:2:3:4:5:6::]",      ipv6_address{ 1, 2, 3, 4, 5, 6, 0, 0 } ),
+        ParseIPLiteral::make_test_data( "[1:2:3:4:5::]",        ipv6_address{ 1, 2, 3, 4, 5, 0, 0, 0 } ),
+        ParseIPLiteral::make_test_data( "[1:2:3:4::]",          ipv6_address{ 1, 2, 3, 4, 0, 0, 0, 0 } ),
+        ParseIPLiteral::make_test_data( "[1:2:3::]",            ipv6_address{ 1, 2, 3, 0, 0, 0, 0, 0 } ),
+        ParseIPLiteral::make_test_data( "[1:2::]",              ipv6_address{ 1, 2, 0, 0, 0, 0, 0, 0 } ),
+        ParseIPLiteral::make_test_data( "[1::]",                ipv6_address{ 1, 0, 0, 0, 0, 0, 0, 0 } ),
+
+        ParseIPLiteral::make_test_data( "[::ffff:8.8.8.8]",     ipv6_address{ 0, 0, 0, 0, 0, 0xffff, 0x0808, 0x0808 } )
+    ),
+    ::testing::Values(
+        ParseIPLiteral::make_test_data("::1]"),
+        ParseIPLiteral::make_test_data("[::"),
+        ParseIPLiteral::make_test_data("127.0.0.256"),
+        ParseIPLiteral::make_test_data("[::255.255.2.387]"),
+        ParseIPLiteral::make_test_data("[255.255.2.387]"),
+        ParseIPLiteral::make_test_data("127.0.00.1"),
+        ParseIPLiteral::make_test_data("192.0..33"),
+        ParseIPLiteral::make_test_data("192.0.33."),
+        ParseIPLiteral::make_test_data("192.0.3"),
+        ParseIPLiteral::make_test_data("192.0.3"),
+        ParseIPLiteral::make_test_data("192:0:3")
+    )
+);
+
 } // namespace test
 }  /* namespace iri */
 }  /* namespace tip */

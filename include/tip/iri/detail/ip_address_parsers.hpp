@@ -264,7 +264,14 @@ struct parser<iri_part::ipv6_address>
     void
     clear()
     {
-        ;
+        stage_ = none;
+        prev_ = 0;
+        ipv4_parser_.clear();
+        hextet_.clear();
+
+        head_size_ = 0;
+        tail_size_ = 0;
+        base_type::reset();
     }
 private:
     void
@@ -312,6 +319,71 @@ private:
     ::std::size_t   head_size_;
     element         tail_[ipv6_address::size];
     ::std::size_t   tail_size_;
+};
+
+/**
+ * Parser for IP literal, that is IPv6 or IP future in square brackets
+ * TODO IP Future
+ */
+template <>
+struct parser<iri_part::ip_literal>
+        : detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal> {
+    using base_type     = detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal>;
+    using value_type    = ipv6_address;
+    using parser_state  = detail::parser_state;
+    using ipv6_parser   = parser<iri_part::ipv6_address>;
+
+    constexpr parser()
+        : ipv6_{} {}
+
+    parser_state
+    feed_char(char c)
+    {
+        if (empty()) {
+            // Want [ as a first symbol
+            if (c != '[')
+                return fail();
+            start();
+        } else if (want_more()){
+            if (c == ']') {
+                // finish this
+                ipv6_.finish();
+                if (ipv6_.failed())
+                    return fail();
+                base_type::finish();
+            } else {
+                if (ipv6_.want_more()) {
+                    ipv6_.feed_char(c);
+                } else {
+                    return fail();
+                }
+            }
+        }
+        return state;
+    }
+
+    parser_state
+    finish()
+    {
+        if (want_more())
+            return fail();
+        return state;
+    }
+
+    value_type
+    value() const
+    {
+        return ipv6_.value();
+    }
+
+    void
+    clear()
+    {
+        ipv6_.clear();
+        base_type::reset();
+    }
+private:
+    ipv6_parser        ipv6_;
 };
 
 } /* namespace v2 */
