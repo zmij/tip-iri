@@ -172,6 +172,7 @@ PARSER_TEST(ip_lit_parser, IPLiteral,
         ParseIPLiteral::make_test_data( "[::ffff:8.8.8.8]",     ipv6_address{ 0, 0, 0, 0, 0, 0xffff, 0x0808, 0x0808 } )
     ),
     ::testing::Values(
+        ParseIPLiteral::make_test_data("[]"),
         ParseIPLiteral::make_test_data("::1]"),
         ParseIPLiteral::make_test_data("[::"),
         ParseIPLiteral::make_test_data("127.0.0.256"),

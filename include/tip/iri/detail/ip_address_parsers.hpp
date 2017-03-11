@@ -23,6 +23,7 @@ struct parser<iri_part::ipv4_address> :
     using value_type    = ipv4_address;
     using digit_parser  = uint_parser<ipv4_address::repr, 10, 3>;
     using parser_state  = detail::parser_state;
+    using feed_result   = detail::feed_result;
     using base_type     = detail::parser_base< parser<iri_part::ipv4_address>, iri_part::ipv4_address>;
 
     constexpr parser()
@@ -38,7 +39,7 @@ struct parser<iri_part::ipv4_address> :
         else
             start();
     }
-    parser_state
+    feed_result
     feed_char(char c)
     {
         if (want_more()) {
@@ -46,27 +47,29 @@ struct parser<iri_part::ipv4_address> :
             if (any(cls & char_type::digit)) {
                 start();
                 if (octet_.done())
-                    return fail();
+                    return {fail(), false};
                 octet_.feed_char(c);
                 if (octet_.value() > 255)
-                    return fail();
+                    return {fail(), false};
+                return {state, true};
             } else {
                 if (empty())
-                    return fail();
+                    return {fail(), false};
                 // If this is the last octet and we have some digits - push it and done
                 if (last_octet()) {
-                    return finish();
+                    return {finish(), false};
                 } else if (c == '.') {
                     if (octet_.empty()) {
-                        return fail();
+                        return {fail(), false};
                     }
                     push_octet();
+                    return {state, true};
                 } else {
-                    return fail();
+                    return {fail(), false};
                 }
             }
         }
-        return state;
+        return {state, false};
     }
     constexpr bool
     last_octet() const
@@ -131,6 +134,7 @@ struct parser<iri_part::ipv6_address>
     using value_type    = ipv6_address;
     using element       = ipv6_address::element;
     using parser_state  = detail::parser_state;
+    using feed_result   = detail::feed_result;
     using digit_parser  = uint_parser<element, 16, 4>;
     using ipv4_parser   = parser< iri_part::ipv4_address >;
 
@@ -139,9 +143,10 @@ struct parser<iri_part::ipv6_address>
     {
     }
 
-    parser_state
+    feed_result
     feed_char(char c)
     {
+        bool consumed = false;
         if (want_more()) {
             auto cls = char_classification::classify(c);
             if (stage_ == none) {
@@ -149,23 +154,25 @@ struct parser<iri_part::ipv6_address>
                 start();
             }
             if (stage_ == tail_ipv4) {
-                ipv4_parser_.feed_char(c);
+                auto res = ipv4_parser_.feed_char(c);
                 if (ipv4_parser_.failed())
-                    return fail();
-                if (!ipv4_parser_.want_more()) {
+                    return {fail(), res.second};
+                if (ipv4_parser_.done()) {
                     // Set the bytes
-                    return finish();
+                    return {finish(), true};
                 }
+                consumed = true;
             } else {
                 if (any(cls & char_type::xdigit)) {
                     if (stage_ == tail_from_begin)
                         // Fist char is colon and second is not
-                        return fail();
+                        return {fail(), false};
                     if (hextet_.done()) {
                         // Extra digit in hextet
-                        return fail();
+                        return {fail(), false};
                     }
                     hextet_.feed_char(c);
+                    consumed = true;
                 } else if (c == ':') {
                     switch (prev_) {
                         case 0:
@@ -175,35 +182,37 @@ struct parser<iri_part::ipv6_address>
                         case ':':
                             // An extra colon or double colon for a second time
                             if (stage_ == tail)
-                                return fail();
+                                return {fail(), false};
                             stage_ = tail;
                             break;
                         default:
                             push_hextet();
                             break;
                     }
+                    consumed = true;
                 } else if (c == '.') {
                     // convert previous hextet to a decimal octet (literally)
                     // and proceed with parsing ipv4 part
                     if (hextet_.digits() == 0)
-                        return fail();
+                        return {fail(), false};
                     // No hextets skipped, must be exactly 6 before
                     if (stage_ == head && head_size_ != 6)
-                        return fail();
+                        return {fail(), false};
                     if (stage_ == tail && head_size_ + tail_size_ > 4)
-                        return fail();
+                        return {fail(), false};
                     ipv4_parser_ = ipv4_parser{ detail::literal_hex_to_dec(hextet_.value()) };
                     hextet_.clear();
                     if (ipv4_parser_.failed())
-                        return fail();
+                        return {fail(), false};
                     stage_ = tail_ipv4;
+                    consumed = true;
                 } else {
                     finish();
                 }
             }
             prev_ = c;
         }
-        return state;
+        return {state, consumed};
     }
 
     parser_state
@@ -331,35 +340,43 @@ struct parser<iri_part::ip_literal>
     using base_type     = detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal>;
     using value_type    = ipv6_address;
     using parser_state  = detail::parser_state;
+    using feed_result   = detail::feed_result;
     using ipv6_parser   = parser<iri_part::ipv6_address>;
 
     constexpr parser()
         : ipv6_{} {}
 
-    parser_state
+    feed_result
     feed_char(char c)
     {
+        bool consumed = false;
         if (empty()) {
             // Want [ as a first symbol
             if (c != '[')
-                return fail();
+                return {fail(), false};
             start();
+            consumed = true;
         } else if (want_more()){
             if (c == ']') {
                 // finish this
                 ipv6_.finish();
                 if (ipv6_.failed())
-                    return fail();
+                    return {fail(), false};
                 base_type::finish();
+                consumed = true;
             } else {
                 if (ipv6_.want_more()) {
-                    ipv6_.feed_char(c);
+                    auto res = ipv6_.feed_char(c);
+                    if (ipv6_.failed()) {
+                        return {fail(), false};
+                    }
+                    consumed = true;
                 } else {
-                    return fail();
+                    return {fail(), false};
                 }
             }
         }
-        return state;
+        return {state, consumed};
     }
 
     parser_state

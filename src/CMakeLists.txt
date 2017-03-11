@@ -5,8 +5,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(iri_lib_SRCS
-    iri.cpp
     ip_address.cpp
+    host.cpp
+    iri.cpp
 )
 
 add_library(${TIP_IRI_LIB} SHARED ${iri_lib_SRCS})

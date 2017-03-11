@@ -89,23 +89,37 @@ using gen_delim_chars       = make_char_sequence< gen_delim_str >;
 using reserved_chars        = unique_sort< join< sub_delim_chars, gen_delim_chars >::type >::type;
 
 // alnum | ucschar | -._~
-using unreserved_chars      = unique_sort< join< alnum_chars, make_char_sequence< unreserved_str > >::type >::type;
+using iunreserved_chars      = unique_sort< join<
+                                alnum_chars,
+                                make_char_sequence< unreserved_str > >::type >::type;
 
-// unreserved | pct encoded | sub_delims | :@
-using ip_chars              = unique_sort< join< unreserved_chars, sub_delim_chars,
+//// unreserved | pct encoded | sub_delims | :@
+using ipchars              = unique_sort< join< iunreserved_chars, sub_delim_chars,
                                                 char_sequence<':', '@'>>::type >::type;
 
-using fragment_chars        = unique_sort< join< ip_chars, char_sequence< '/', '?' > >::type >::type;
+using reg_name_chars        = unique_sort< join< iunreserved_chars, sub_delim_chars
+                                    >::type >::type;
+
+using fragment_chars        = unique_sort< join< ipchars, char_sequence< '/', '?' > >::type >::type;
 
 
-using schema_class      = iri_part_class< schema_chars,     iri_part::schema >;
-using ipv4_class        = iri_part_class< ipv4_chars,       iri_part::ipv4_address >;
-using ipv6_class        = iri_part_class< ipv6_chars,       iri_part::ipv6_address >;
+using schema_class      = iri_part_class< schema_chars,     iri_part::schema        >;
+using ipv4_class        = iri_part_class< ipv4_chars,       iri_part::ipv4_address  >;
+using ipv6_class        = iri_part_class< ipv6_chars,       iri_part::ipv6_address  >;
+using reg_name_class    = iri_part_class< reg_name_chars,   iri_part::reg_name      >;
 
-using fragment_class    = iri_part_class< fragment_chars,   iri_part::fragment >;
+using fragment_class    = iri_part_class< fragment_chars,   iri_part::fragment      >;
+
+using iri_parts_table_base = character_class_table<128, iri_part,
+        schema_class,
+        ipv4_class,
+        ipv6_class,
+        reg_name_class
+    >;
 
 } /* namespace char_classes */
 
+struct iri_char_classification : char_classes::iri_parts_table_base {};
 
 //
 template < iri_part P >
