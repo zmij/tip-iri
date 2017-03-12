@@ -69,16 +69,17 @@ private:
     char    val_;
 };
 
-template < typename T, T Filter >
+template < typename T, T Filter, bool AllowEmpty = false >
 struct char_class_sequence_parser
         : detail::parser_state_base<char_class_sequence_parser<T, Filter>> {
 
     using classificator = typename char_classification_traits<T>::type;
-    static constexpr T filter = Filter;
     using base_type         = detail::parser_state_base<char_class_sequence_parser<T, Filter>>;
     using parser_state      = detail::parser_state;
     using feed_result       = detail::feed_result;
-    using value_type = ::std::string;
+    using value_type        = ::std::string;
+    static constexpr T filter           = Filter;
+    static constexpr bool allow_empty   = AllowEmpty;
 
     using base_type::want_more;
 
@@ -100,6 +101,8 @@ struct char_class_sequence_parser
     finish()
     {
         if (want_more()) {
+            if (!allow_empty && val_.empty())
+                return fail();
             base_type::finish();
         }
         return state;
