@@ -37,7 +37,7 @@ struct parser<iri_part::schema>
             auto cls = char_classification::classify(c);
             if (empty()) {
                 if (!(cls & char_type::alpha))
-                    return { fail(), consumed };
+                    return fail(false);
                 start();
                 val_.push_back(c);
                 consumed = true;
@@ -51,7 +51,7 @@ struct parser<iri_part::schema>
                 }
             }
         }
-        return { state, consumed };
+        return base_type::consumed(consumed);
     }
 
     parser_state
@@ -106,9 +106,9 @@ struct parser<iri_part::host>
             auto res = parsers_.feed_char(c);
             if (parsers_.finished())
                 finish();
-            return res;
+            return consumed(res.second);
         }
-        return {state, false};
+        return consumed(false);
     }
     parser_state
     finish()
@@ -157,15 +157,15 @@ struct parser<iri_part::port>
             start();
             auto res = port_.feed_char(c);
             if (port_.failed())
-                return { fail(), res.second };
+                return fail(res.second);
             if (port_.done()) {
                 finish();
                 if (failed())
-                    return {state, false};
+                    return consumed(false);
             }
-            return {state, res.second};
+            return consumed(res.second);
         }
-        return {state, false};
+        return consumed(false);
     }
 
     parser_state
@@ -224,12 +224,12 @@ struct parser<iri_part::authority>
                 auto res = host_.feed_char(c);
                 if (!res.second) {
                     if (host_.failed()) {
-                        return { fail(), false };
+                        return fail(false);
                     }
                     if (c == ':') {
                         host_.finish();
                         // proceed with reading the port
-                        return { state, true };
+                        return base_type::consumed(true);
                     } else {
                         finish();
                     }
@@ -237,17 +237,17 @@ struct parser<iri_part::authority>
                 consumed = res.second;
             } else {
                 if (c == ':' && port_.empty()) {
-                    return {state, true};
+                    return base_type::consumed(true);
                 }
                 auto res = port_.feed_char(c);
                 if (port_.failed())
-                    return { fail(), false };
+                    return fail(false);
                 if (port_.done())
                     finish();
                 consumed = res.second;
             }
         }
-        return {state, consumed};
+        return base_type::consumed(consumed);
     }
 
     parser_state

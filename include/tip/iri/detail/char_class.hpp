@@ -296,7 +296,7 @@ struct uint_parser : detail::parser_state_base< uint_parser<T, Base, MaxDigits, 
                 if (max_digits > 0 && digits_ >= max_digits) {
                     finish();
                 }
-                return { state, true };
+                return consumed(true);
             } else {
                 if (digits_ >= min_digits) {
                     finish();
@@ -305,7 +305,7 @@ struct uint_parser : detail::parser_state_base< uint_parser<T, Base, MaxDigits, 
                 }
             }
         }
-        return {state, false};
+        return consumed(false);
     }
 
     parser_state
@@ -338,6 +338,7 @@ struct uint_parser : detail::parser_state_base< uint_parser<T, Base, MaxDigits, 
 private:
     using base_type::reset;
     using base_type::state;
+    using base_type::consumed;
 
     value_type      value_;
     ::std::size_t   digits_;
@@ -365,9 +366,9 @@ struct pct_encoded_parser
             start();
             auto res = hex_.feed_char(c);
             state = res.first;
-            return res;
+            return consumed(res.second);
         }
-        return {state, false};
+        return consumed(false);
     }
 
     parser_state
@@ -503,12 +504,12 @@ struct hex_encoded_parser
         if (want_more()) {
             auto res = hex_.feed_char(c);
             if (res.first == parser_state::done) {
-                return {finish(), res.second};
+                return base_type::finish(res.second);
             }
             state = res.first;
-            return res;
+            return consumed(res.second);
         }
-        return {state, false};
+        return consumed(false);
     }
 
     parser_state
@@ -516,7 +517,7 @@ struct hex_encoded_parser
     {
         if (want_more()) {
             // Check the value
-            hex_.finish();
+            auto res = hex_.finish();
             if (hex_.failed())
                 return fail();
             if (!check_value())
@@ -557,10 +558,13 @@ private:
         return check_type::check(hex_.value());
     }
 
+    using base_type::consumed;
     using base_type::state;
 
     hex_parser      hex_;
 };
+
+struct ignore_value{};
 
 namespace detail {
 
@@ -571,7 +575,7 @@ template < typename Final, char ... Chars >
 struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Chars...>>
     : detail::parser_state_base<Final> {
 
-    using value_type        = ::std::string;
+    using value_type        = ignore_value;
     using string_literal    = ::psst::meta::char_sequence_literal<Chars...>;
     using base_type         = detail::parser_state_base<Final>;
     using parser_state      = detail::parser_state;
@@ -586,17 +590,17 @@ struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Chars...>>
     feed_result
     feed_char(char c)
     {
-        bool consumed = false;
         if (want_more()) {
             start();
             if (c != *current_) {
-                return { fail(), consumed };
+                return fail(false);
             }
             if (++current_ == string_literal::static_end()) {
                 finish();
             }
+            return consumed(true);
         }
-        return { state, consumed };
+        return consumed(false);
     }
 
     parser_state
@@ -617,13 +621,13 @@ struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Chars...>>
         base_type::reset();
     }
 
-    ::std::string const&
+    value_type
     value() const
     {
-        static ::std::string const _val{ string_literal::static_begin(), string_literal::static_end() };
-        return _val;
+        return value_type{};
     }
 private:
+    using base_type::consumed;
     using base_type::state;
     char const* current_;
 };
@@ -632,7 +636,7 @@ template < typename Final, char Char >
 struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Char>>
     : detail::parser_state_base<Final> {
 
-    using value_type        = ::std::string;
+    using value_type        = ignore_value;
     using base_type         = detail::parser_state_base<Final>;
     using parser_state      = detail::parser_state;
     using feed_result       = detail::feed_result;
@@ -648,10 +652,10 @@ struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Char>>
     {
         if (want_more()) {
             if (c != check_value)
-                return { fail(), false };
-            return {base_type::finish(), true};
+                return fail(false);
+            return base_type::finish(true);
         }
-        return { state, false };
+        return consumed(false);
     }
 
     parser_state
@@ -668,13 +672,13 @@ struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Char>>
         base_type::reset();
     }
 
-    value_type const&
+    value_type
     value() const
     {
-        static ::std::string const _val(check_value);
-        return _val;
+        return value_type{};
     }
 private:
+    using base_type::consumed;
     using base_type::state;
 };
 
