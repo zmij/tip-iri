@@ -6,8 +6,8 @@
  */
 
 #include <gtest/gtest.h>
-#include <tip/iri/detail/authority_parser.hpp>
-#include <tip/iri/detail/reg_name_parser.hpp>
+#include <tip/iri/parsers/authority_parser.hpp>
+#include <tip/iri/parsers/reg_name_parser.hpp>
 #include "parser_test.hpp"
 
 namespace tip {

@@ -5,12 +5,12 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_DETAIL_AUTHORITY_PARSER_HPP_
-#define TIP_IRI_DETAIL_AUTHORITY_PARSER_HPP_
+#ifndef TIP_IRI_PARSERS_AUTHORITY_PARSER_HPP_
+#define TIP_IRI_PARSERS_AUTHORITY_PARSER_HPP_
 
 #include <tip/iri/host.hpp>
-#include <tip/iri/detail/ip_address_parsers.hpp>
-#include <tip/iri/detail/reg_name_parser.hpp>
+#include <tip/iri/parsers/ip_address_parsers.hpp>
+#include <tip/iri/parsers/reg_name_parser.hpp>
 
 #include <numeric>
 

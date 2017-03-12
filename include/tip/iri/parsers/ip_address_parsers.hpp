@@ -5,11 +5,13 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_DETAIL_IP_ADDRESS_PARSERS_HPP_
-#define TIP_IRI_DETAIL_IP_ADDRESS_PARSERS_HPP_
+#ifndef TIP_IRI_PARSERS_IP_ADDRESS_PARSERS_HPP_
+#define TIP_IRI_PARSERS_IP_ADDRESS_PARSERS_HPP_
 
 #include <tip/iri/detail/char_class.hpp>
-#include <tip/iri/detail/iri_part.hpp>
+#include <tip/iri/parsers/iri_parser_base.hpp>
+#include <tip/iri/parsers/int_parser.hpp>
+#include <tip/iri/parsers/literal_parser.hpp>
 
 #include <tip/iri/ip_address.hpp>
 
@@ -400,4 +402,4 @@ private:
 
 
 
-#endif /* TIP_IRI_DETAIL_IP_ADDRESS_PARSERS_HPP_ */
+#endif /* TIP_IRI_PARSERS_IP_ADDRESS_PARSERS_HPP_ */

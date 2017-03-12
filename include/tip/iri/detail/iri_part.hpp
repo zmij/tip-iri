@@ -9,7 +9,6 @@
 #define TIP_IRI_DETAIL_IRI_PART_HPP_
 
 #include <tip/iri/detail/char_classes.hpp>
-#include <tip/iri/detail/parser_state_base.hpp>
 
 namespace tip {
 namespace iri {
@@ -28,8 +27,10 @@ enum class iri_part {
     host            = reg_name | ipv4_address | ip_literal,
     port            = ip_future     * 2,
     authority       = user_info | host | port,
-    path            = port          * 2,
-    query_param     = path          * 2,
+    path_nc_segment = port          * 2,
+    path_segment    = path_nc_segment *2,
+    path            = path_segment  | path_nc_segment,
+    query_param     = path_segment  * 2,
     query_value     = query_param   * 2,
     query           = query_param | query_value,
     fragment        = query_value   * 2
@@ -89,13 +90,15 @@ using gen_delim_chars       = make_char_sequence< gen_delim_str >;
 using reserved_chars        = unique_sort< join< sub_delim_chars, gen_delim_chars >::type >::type;
 
 // alnum | ucschar | -._~
-using iunreserved_chars      = unique_sort< join<
+using iunreserved_chars     = unique_sort< join<
                                 alnum_chars,
                                 make_char_sequence< unreserved_str > >::type >::type;
 
 //// unreserved | pct encoded | sub_delims | :@
-using ipchars              = unique_sort< join< iunreserved_chars, sub_delim_chars,
+using ipchars               = unique_sort< join< iunreserved_chars, sub_delim_chars,
                                                 char_sequence<':', '@'>>::type >::type;
+using ipchars_nc            = unique_sort< join< iunreserved_chars, sub_delim_chars,
+                                                char_sequence<'@'>>::type >::type;
 
 using reg_name_chars        = unique_sort< join< iunreserved_chars, sub_delim_chars
                                     >::type >::type;
@@ -107,6 +110,8 @@ using schema_class      = iri_part_class< schema_chars,     iri_part::schema    
 using ipv4_class        = iri_part_class< ipv4_chars,       iri_part::ipv4_address  >;
 using ipv6_class        = iri_part_class< ipv6_chars,       iri_part::ipv6_address  >;
 using reg_name_class    = iri_part_class< reg_name_chars,   iri_part::reg_name      >;
+using path_seg_nc_class = iri_part_class< ipchars_nc,       iri_part::path_nc_segment >;
+using path_seg_class    = iri_part_class< ipchars,          iri_part::path_segment  >;
 
 using fragment_class    = iri_part_class< fragment_chars,   iri_part::fragment      >;
 
@@ -114,89 +119,25 @@ using iri_parts_table_base = character_class_table<128, iri_part,
         schema_class,
         ipv4_class,
         ipv6_class,
-        reg_name_class
+        reg_name_class,
+        path_seg_nc_class,
+        path_seg_class
     >;
 
 } /* namespace char_classes */
 
 struct iri_char_classification : char_classes::iri_parts_table_base {};
 
+template <>
+struct char_classification_traits<iri_part> {
+    using type = iri_char_classification;
+};
 //
 template < iri_part P >
 using part_constant = ::std::integral_constant<iri_part, P>;
 template < iri_part ... Parts >
 using part_sequence = ::std::integer_sequence<iri_part, Parts...>;
 //
-//template < typename T, iri_part P >
-//struct transition {};
-//
-//template < typename ... T >
-//struct transitions {};
-//
-
-namespace detail {
-
-template < iri_part P >
-struct part_traits_base {
-    using type  = part_constant<P>;
-    using next  = part_sequence<>;
-    using sub   = part_sequence<>;
-    using chars = ::psst::meta::char_sequence<>;
-};
-
-} /* namespace detail */
-
-
-template < iri_part P >
-struct part_traits : detail::part_traits_base<P> {};
-
-namespace detail {
-
-template < typename Final, iri_part P >
-struct parser_base : parser_state_base< Final > {
-    using traits_type   = part_traits<P>;
-    using type          = typename traits_type::type;
-};
-
-} /* namespace detail */
-
-template < iri_part P >
-struct parser : detail::parser_base< parser<P>, P> {};
-
-//
-//template <>
-//struct part_traits<iri_part::schema> {
-//    using type  = part_constant< iri_part::schema >;
-//    using next  = part_sequence< iri_part::user_info, iri_part::host, iri_part::path >;
-//    using chars = char_classes::schema_chars;
-//};
-//
-///**
-// *
-// */
-//template <>
-//struct part_traits<iri_part::none> {
-//    using type  = part_constant< iri_part::none >;
-//    using next  = part_sequence<
-//                    iri_part::schema,
-//                    iri_part::user_info,
-//                    iri_part::host,
-//                    iri_part::path >;
-//};
-//
-//template < iri_part P >
-//struct parser {
-//    using traits_type   = part_traits<P>;
-//    using type          = typename traits_type::type;
-//
-//    template < typename InputIterator >
-//    void
-//    operator()(InputIterator& begin, InputIterator end)
-//    {
-//
-//    }
-//};
-
 } /* namespace v2 */
 
 

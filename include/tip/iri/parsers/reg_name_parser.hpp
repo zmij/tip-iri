@@ -5,11 +5,13 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_DETAIL_REG_NAME_PARSER_HPP_
-#define TIP_IRI_DETAIL_REG_NAME_PARSER_HPP_
+#ifndef TIP_IRI_PARSERS_REG_NAME_PARSER_HPP_
+#define TIP_IRI_PARSERS_REG_NAME_PARSER_HPP_
 
 #include <tip/iri/detail/iri_part.hpp>
 #include <tip/iri/detail/char_class.hpp>
+
+#include <tip/iri/parsers/hex_encoded_parser.hpp>
 
 #include <string>
 #include <algorithm>

@@ -6,7 +6,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <tip/iri/detail/char_class.hpp>
+#include <tip/iri/parsers/int_parser.hpp>
 #include <string>
 
 namespace tip {
