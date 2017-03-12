@@ -69,13 +69,18 @@ struct character_class_table_impl< ::std::integer_sequence<::std::size_t, Indexe
     template < ::std::size_t Idx >
     using nth_value = typename nth_classification<Idx, value_type, Classes...>::type;
     using type = ::std::integer_sequence<value_type, nth_value<Indexes>::value...>;
+    static constexpr ::std::size_t size = sizeof ... (Indexes);
     static constexpr value_type value[] = {
         nth_value< Indexes >::value...
     };
 
     static constexpr value_type
     classify(char c)
-    { return value[c]; }
+    {
+        if (c >= size)
+            return value_type{};
+        return value[c];
+    }
 };
 
 template < ::std::size_t ... Indexes, typename T, typename ... Classes >

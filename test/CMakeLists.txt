@@ -20,6 +20,7 @@ set(iri_test_SRCS
 #    iri_parse_test.cpp
 #    iri_path_test.cpp
     char_classes.cpp
+    repetition_parser_test.cpp
     int_parser_test.cpp
     literal_parser_test.cpp
     hex_parser_test.cpp

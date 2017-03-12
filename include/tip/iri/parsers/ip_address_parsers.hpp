@@ -12,6 +12,7 @@
 #include <tip/iri/parsers/iri_parser_base.hpp>
 #include <tip/iri/parsers/int_parser.hpp>
 #include <tip/iri/parsers/literal_parser.hpp>
+#include <tip/iri/parsers/composite_parsers.hpp>
 
 #include <tip/iri/ip_address.hpp>
 

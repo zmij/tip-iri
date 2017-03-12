@@ -9,6 +9,8 @@
 #define TIP_IRI_PARSERS_HEX_ENCODED_PARSER_HPP_
 
 #include <tip/iri/parsers/int_parser.hpp>
+#include <tip/iri/parsers/literal_parser.hpp>
+#include <tip/iri/parsers/composite_parsers.hpp>
 
 namespace tip {
 namespace iri {
@@ -233,6 +235,73 @@ private:
 
     hex_parser      hex_;
 };
+
+
+template < typename SeqParser, char ... Escape >
+struct escape_sequence_parser
+    : detail::parser_state_base<escape_sequence_parser<SeqParser, Escape...> > {
+
+    using value_parser  = SeqParser;
+    using value_type    = typename value_parser::value_type;
+    using base_type     = detail::parser_state_base<escape_sequence_parser<SeqParser, Escape...>>;
+    using parser_state  = detail::parser_state;
+    using feed_result   = detail::feed_result;
+
+    using parser_seq    = detail::sequental_parser<
+                                literal_parser<Escape...>,
+                                value_parser
+                            >;
+
+    using base_type::want_more;
+    using base_type::fail;
+
+    feed_result
+    feed_char(char c)
+    {
+        bool consumed = false;
+        if (want_more()) {
+            auto res = parser_.feed_char(c);
+            if (detail::failed(res.first))
+                return fail(res.second);
+            if (detail::done(res.first))
+                return base_type::finish(res.second);
+            consumed = res.second;
+        }
+        return base_type::consumed(consumed);
+    }
+    parser_state
+    finish()
+    {
+        if (want_more()) {
+            auto res = parser_.finish();
+            if (detail::failed(res))
+                return fail();
+        }
+        return base_type::finish();
+    }
+
+    value_type
+    value() const
+    {
+        auto v = parser_.value();
+        return ::std::get<1>(v);
+    }
+
+    void
+    clear()
+    {
+        parser_.clear();
+        base_type::reset();
+    }
+private:
+    parser_seq  parser_;
+};
+
+using pct_encoded_sequence_parser = escape_sequence_parser<pct_encoded_parser, '%'>;
+using hex_encoded_ucs_parser
+        = escape_sequence_parser<hex_encoded_parser<hex_range::ucschar>, '%', 'x'>;
+using hex_encoded_private_parser
+        = escape_sequence_parser<hex_encoded_parser<hex_range::iprivate>, '%', 'x'>;
 
 } /* namespace v2 */
 } /* namespace iri */

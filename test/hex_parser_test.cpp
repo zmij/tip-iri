@@ -26,6 +26,22 @@ PARSER_TEST(pct_encoded_parser, PCT,
         ParsePCT::make_test_data("a")
     ));
 
+PARSER_TEST(pct_encoded_sequence_parser, PCTSeq,
+    ::testing::Values(
+        ParsePCT::make_test_data("%20", ' '),
+        ParsePCT::make_test_data("%7e", '~'),
+        ParsePCT::make_test_data("%0a", '\n'),
+        ParsePCT::make_test_data("%0d", '\r')
+    ),
+    ::testing::Values(
+        ParsePCT::make_test_data("%n"),
+        ParsePCT::make_test_data("%1"),
+        ParsePCT::make_test_data("%a"),
+        ParsePCT::make_test_data("n"),
+        ParsePCT::make_test_data("1"),
+        ParsePCT::make_test_data("a")
+    ));
+
 using iprivate_parser = hex_encoded_parser<hex_range::iprivate>;
 PARSER_TEST(iprivate_parser, Priv,
     ::testing::Values(
@@ -33,6 +49,16 @@ PARSER_TEST(iprivate_parser, Priv,
         ParsePriv::make_test_data("f7ea", "\xf7\xea")
     ),
     ::testing::Values(
+        ParsePriv::make_test_data("a0")
+    ));
+
+PARSER_TEST(hex_encoded_private_parser, PrivSeq,
+    ::testing::Values(
+        ParsePriv::make_test_data("%xee80", "\xee\x80"),
+        ParsePriv::make_test_data("%xf7ea", "\xf7\xea")
+    ),
+    ::testing::Values(
+        ParsePriv::make_test_data("%ee80", "\xee\x80"),
         ParsePriv::make_test_data("a0")
     ));
 
@@ -50,6 +76,25 @@ PARSER_TEST(ucs_parser, UCS,
         ParseUCS::make_test_data("d790", "א")
     ),
     ::testing::Values(
+        ParseUCS::make_test_data("d800"),
+        ParseUCS::make_test_data("d8b4", "ش"),
+        ParseUCS::make_test_data("db9e", "۞")
+    ));
+
+PARSER_TEST(hex_encoded_ucs_parser, UCSSeq,
+    ::testing::Values(
+        ParseUCS::make_test_data("%xc990", "ɐ"),
+        ParseUCS::make_test_data("%xc9b1", "ɱ"),
+        ParseUCS::make_test_data("%xc9b5", "ɵ"),
+        ParseUCS::make_test_data("%xca98", "ʘ"),
+        ParseUCS::make_test_data("%xcdbc", "ͼ"),
+        ParseUCS::make_test_data("%xd289", "҉"),
+        ParseUCS::make_test_data("%xd4ab", "ԫ"),
+        ParseUCS::make_test_data("%xd596", "Ֆ"),
+        ParseUCS::make_test_data("%xd790", "א")
+    ),
+    ::testing::Values(
+        ParseUCS::make_test_data("%d800"),
         ParseUCS::make_test_data("d800"),
         ParseUCS::make_test_data("d8b4", "ش"),
         ParseUCS::make_test_data("db9e", "۞")

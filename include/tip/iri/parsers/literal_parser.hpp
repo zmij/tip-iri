@@ -15,8 +15,6 @@ namespace tip {
 namespace iri {
 inline namespace v2 {
 
-struct ignore_value{};
-
 namespace detail {
 
 template < typename Final, typename T >
