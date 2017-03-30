@@ -140,6 +140,33 @@ struct appender< ::std::map<K, V, Rest...>, ::std::pair<K, V> > {
     }
 };
 
+template < typename K, typename V, typename ... Rest >
+struct appender< ::std::multimap<K, V, Rest...>, ::std::pair<K, V> > {
+    static void
+    append(::std::multimap<K, V, Rest...>& val, ::std::pair<K, V> const& var)
+    {
+        val.emplace(var);
+    }
+};
+
+template < typename K, typename V, typename ... Rest >
+struct appender< ::std::map<K, V, Rest...>, ::std::tuple<K, V> > {
+    static void
+    append(::std::map<K, V, Rest...>& val, ::std::tuple<K, V> const& var)
+    {
+        val.emplace(::std::get<0>(var), ::std::get<1>(var));
+    }
+};
+
+template < typename K, typename V, typename ... Rest >
+struct appender< ::std::multimap<K, V, Rest...>, ::std::tuple<K, V> > {
+    static void
+    append(::std::multimap<K, V, Rest...>& val, ::std::tuple<K, V> const& var)
+    {
+        val.emplace(::std::get<0>(var), ::std::get<1>(var));
+    }
+};
+
 } /* namespace detail */
 } /* namespace v2 */
 } /* namespace iri */

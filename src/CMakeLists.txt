@@ -8,6 +8,7 @@ set(iri_lib_SRCS
     ip_address.cpp
     host.cpp
     path.cpp
+    query.cpp
     iri.cpp
 )
 
