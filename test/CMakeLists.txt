@@ -26,6 +26,7 @@ set(iri_test_SRCS
     hex_parser_test.cpp
     ip_address_io.cpp
     authority_parse_test.cpp
+    path_parser_test.cpp
 )
 
 add_executable(test-iri ${iri_test_SRCS})

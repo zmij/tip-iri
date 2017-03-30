@@ -340,61 +340,66 @@ private:
  */
 template <>
 struct parser<iri_part::ip_literal>
-        : detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal> {
-    using base_type     = detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal>;
-    using value_type    = ipv6_address;
-    using parser_state  = detail::parser_state;
-    using feed_result   = detail::feed_result;
-    using ipv6_parser   = parser<iri_part::ipv6_address>;
-
-    using seq_parser    = detail::sequental_parser<
-                                literal_parser<'['>,
-                                parser<iri_part::ipv6_address>,
-                                literal_parser<']'>
-                            >;
-
-    parser()
-        : parser_{} {}
-
-    feed_result
-    feed_char(char c)
-    {
-        bool consumed = false;
-        if (want_more()) {
-            auto res = parser_.feed_char(c);
-            if (detail::failed(res.first))
-                return fail(res.second);
-            if (detail::done(res.first))
-                return base_type::finish(res.second);
-            consumed = res.second;
-        }
-        return base_type::consumed(consumed);
-    }
-
-    parser_state
-    finish()
-    {
-        if (want_more())
-            return fail();
-        return state;
-    }
-
-    value_type
-    value() const
-    {
-        return ::std::get<1>( parser_.value() );
-    }
-
-    void
-    clear()
-    {
-        parser_.clear();
-        base_type::reset();
-    }
-private:
-    seq_parser      parser_;
-    //ipv6_parser        ipv6_;
-};
+    : detail::sequental_parser<
+      literal_parser<'['>,
+      parser<iri_part::ipv6_address>,
+      literal_parser<']'>
+  > {};
+//        : detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal> {
+//    using base_type     = detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal>;
+//    using value_type    = ipv6_address;
+//    using parser_state  = detail::parser_state;
+//    using feed_result   = detail::feed_result;
+//    using ipv6_parser   = parser<iri_part::ipv6_address>;
+//
+//    using seq_parser    = detail::sequental_parser<
+//                                literal_parser<'['>,
+//                                parser<iri_part::ipv6_address>,
+//                                literal_parser<']'>
+//                            >;
+//
+//    parser()
+//        : parser_{} {}
+//
+//    feed_result
+//    feed_char(char c)
+//    {
+//        bool consumed = false;
+//        if (want_more()) {
+//            auto res = parser_.feed_char(c);
+//            if (detail::failed(res.first))
+//                return fail(res.second);
+//            if (detail::done(res.first))
+//                return base_type::finish(res.second);
+//            consumed = res.second;
+//        }
+//        return base_type::consumed(consumed);
+//    }
+//
+//    parser_state
+//    finish()
+//    {
+//        if (want_more())
+//            return fail();
+//        return state;
+//    }
+//
+//    value_type
+//    value() const
+//    {
+//        return parser_.value();
+//    }
+//
+//    void
+//    clear()
+//    {
+//        parser_.clear();
+//        base_type::reset();
+//    }
+//private:
+//    seq_parser      parser_;
+//    //ipv6_parser        ipv6_;
+//};
 
 } /* namespace v2 */
 } /* namespace iri */

@@ -9,6 +9,8 @@
 #define TIP_IRI_PARSERS_REPETITION_PARSER_HPP_
 
 #include <tip/iri/parsers/parser_state_base.hpp>
+#include <tip/iri/parsers/bool_ops.hpp>
+#include <tip/iri/parsers/append.hpp>
 #include <string>
 #include <boost/variant.hpp>
 
@@ -17,60 +19,8 @@ namespace iri {
 inline namespace v2 {
 namespace detail {
 
-template < typename Output, typename Input >
-struct appender;
-
-template <>
-struct appender< ::std::string, char > {
-    static void
-    append(::std::string& s, char c)
-    {
-        s.push_back(c);
-    }
-};
-
-template <>
-struct appender< ::std::string, unsigned char > {
-    static void
-    append(::std::string& s, unsigned char c)
-    {
-        s.push_back(c);
-    }
-};
-
-template <>
-struct appender< ::std::string, ::std::string > {
-    static void
-    append(::std::string& s, ::std::string const& v)
-    {
-        s += v;
-    }
-};
-
-template < typename T, typename ... U >
-struct appender < T, ::boost::variant<U...> > {
-    struct append_visitor : ::boost::static_visitor<> {
-        T& val;
-
-        append_visitor(T& v) : val{v} {}
-
-        template < typename V >
-        void
-        operator()(V const& v) const
-        {
-            appender< T, V >::append(val, v);
-        }
-    };
-
-    static void
-    append(T& val, ::boost::variant< U... > const& var)
-    {
-        ::boost::apply_visitor(append_visitor{val}, var);
-    }
-};
-
-
-template < typename Parser, typename OutputType, ::std::size_t MinRep = 1, ::std::size_t MaxRep = 0 >
+template < typename Parser, typename OutputType,
+        ::std::size_t MinRep = 1, ::std::size_t MaxRep = 0 >
 struct repetition_parser
     : detail::parser_state_base<repetition_parser<Parser, OutputType>> {
 
@@ -78,7 +28,6 @@ struct repetition_parser
     using value_type        = OutputType;
     using parser_type       = Parser;
     using parser_value_type = typename parser_type::value_type;
-    using append_type       = appender<value_type, parser_value_type>;
 
     static constexpr ::std::size_t min_repetitions  = MinRep;
     static constexpr ::std::size_t max_repetitions  = MaxRep;
@@ -91,7 +40,10 @@ struct repetition_parser
 
     using base_type::want_more;
 
-    repetition_parser() : parser_{}, val_{}, rep_count_{} {}
+    repetition_parser() : init_value_{}, parser_{}, val_{}, rep_count_{} {}
+    repetition_parser(value_type&& val)
+        : init_value_{ ::std::move(val) }, parser_{},
+          val_{ init_value_ }, rep_count_{} {}
 
     feed_result
     feed_char(char c)
@@ -104,7 +56,7 @@ struct repetition_parser
             }
             if (detail::done(res.first)) {
                 ++rep_count_;
-                append_type::append(val_, parser_.value());
+                append(val_, parser_.value());
                 parser_.clear();
                 if (!unbounded && rep_count_ >= max_repetitions) {
                     finish();
@@ -128,7 +80,7 @@ struct repetition_parser
                 auto res = parser_.finish();
                 if (!detail::failed(res)) {
                     ++rep_count_;
-                    append_type::append(val_, parser_.value());
+                    append(val_, parser_.value());
                 }
                 parser_.clear();
             }
@@ -143,7 +95,7 @@ struct repetition_parser
     clear()
     {
         parser_.clear();
-        val_ = value_type{};
+        val_ = init_value_;
         rep_count_ = 0;
         base_type::reset();
     }
@@ -155,9 +107,11 @@ private:
     using base_type::fail;
     using base_type::state;
 
-    parser_type     parser_;
-    value_type      val_;
-    ::std::size_t   rep_count_;
+    value_type const    init_value_;
+
+    parser_type         parser_;
+    value_type          val_;
+    ::std::size_t       rep_count_;
 };
 
 } /* namespace detail */

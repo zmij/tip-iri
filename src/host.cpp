@@ -6,6 +6,9 @@
  */
 
 #include <tip/iri/host.hpp>
+#include <tip/iri/detail/iri_part.hpp>
+#include <tip/iri/detail/escape_string.hpp>
+
 #include <iostream>
 #include <sstream>
 
@@ -23,7 +26,8 @@ struct lookup_visitor : boost::static_visitor<> {
     void
     operator()(::std::string const& reg_name) const
     {
-        os << reg_name;
+        using escaper = char_escaper< iri_part, iri_part::reg_name >;
+        escaper::escape(os, reg_name.begin(), reg_name.end());
     }
     void
     operator()(ipv4_address const& ipv4) const

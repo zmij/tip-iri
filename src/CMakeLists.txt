@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 2.6)
 set(iri_lib_SRCS
     ip_address.cpp
     host.cpp
+    path.cpp
     iri.cpp
 )
 

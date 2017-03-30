@@ -9,43 +9,15 @@
 #define TIP_IRI_PARSERS_COMPOSITE_PARSERS_HPP_
 
 #include <tip/iri/parsers/parser_state_base.hpp>
+#include <tip/iri/parsers/bool_ops.hpp>
 #include <boost/variant.hpp>
 #include <pushkin/meta/algorithm.hpp>
+#include <pushkin/meta/integer_sequence.hpp>
 
 namespace tip {
 namespace iri {
 inline namespace v2 {
 namespace detail {
-
-inline constexpr bool
-conjunction(bool lhs, bool rhs)
-{
-    return lhs && rhs;
-}
-
-template < typename ... T >
-constexpr bool
-conjunction(bool v, T ... vals)
-{
-    if (!v)
-        return v;
-    return v && conjunction(vals...);
-}
-
-inline constexpr bool
-disjunction(bool lhs, bool rhs)
-{
-    return lhs || rhs;
-}
-
-template < typename ... T >
-constexpr bool
-disjunction(bool v, T ... vals)
-{
-    if (v)
-        return v;
-    return v || disjunction(vals...);
-}
 
 constexpr parser_state
 best_state(parser_state s)
@@ -166,6 +138,11 @@ using is_ignore_value = typename ::std::is_same<ignore_value, T>::type;
 template < typename T >
 using not_ignore_value = ::psst::meta::invert<is_ignore_value, T>;
 
+template < typename Parser >
+using parser_value_ignored = is_ignore_value< typename Parser::value_type >;
+template < typename Parser >
+using parser_value_not_ignored = ::psst::meta::invert<parser_value_ignored, Parser>;
+
 template < typename ... T >
 struct combine_result_type {
     using type = typename unique_types_variant<
@@ -178,11 +155,76 @@ struct combine_result_type {
             >::type;
 };
 
+template < typename ParserTuple >
+struct make_result_tuple_impl;
+
+template <>
+struct make_result_tuple_impl< ::psst::meta::type_tuple<> > {
+    using type = ignore_value;
+};
+
+template <typename Parser>
+struct make_result_tuple_impl< ::psst::meta::type_tuple<Parser> > {
+    using type = typename Parser::value_type;
+};
+
+
 template < typename ... Parsers >
+struct make_result_tuple_impl< ::psst::meta::type_tuple<Parsers...> > {
+    using type = ::std::tuple< typename Parsers::value_type ...>;
+};
+
+template < typename ... Parsers >
+struct make_result_tuple :
+    make_result_tuple_impl<
+        typename ::psst::meta::find_if<
+                parser_value_not_ignored, Parsers... >::type
+    > {};
+
+template < typename Parser >
+struct make_result_tuple<Parser> {
+    using type = typename Parser::value_type;
+};
+
+template < typename IndexTuple >
+struct parser_value_extract;
+
+template < ::std::size_t ... Indexes >
+struct parser_value_extract<::std::integer_sequence<::std::size_t, Indexes...>> {
+    template < typename ParserTuple >
+    static auto
+    get(ParserTuple const& parsers)
+    {
+        return ::std::make_tuple( ::std::get<Indexes>(parsers).value() ... );
+    }
+};
+
+template < ::std::size_t Index >
+struct parser_value_extract<::std::integer_sequence<::std::size_t, Index>> {
+    template < typename ParserTuple >
+    static auto
+    get(ParserTuple const& parsers)
+    {
+        return ::std::get<Index>(parsers).value();
+    }
+};
+
+template < >
+struct parser_value_extract<::std::integer_sequence<::std::size_t>> {
+    template < typename ParserTuple >
+    static auto
+    get(ParserTuple const& parsers)
+    {
+        return ignore_value{};
+    }
+};
+
+template < typename Final, typename ... Parsers >
 struct composite_parser_base {
-    using parsers_tuple = ::std::tuple<Parsers...>;
+    using parsers_tuple     = ::std::tuple<Parsers...>;
     static constexpr ::std::size_t size = sizeof ... (Parsers);
-    using indexes       = ::std::make_index_sequence< size >;
+    using indexes           = ::std::make_index_sequence< size >;
+    using static_final_type = Final;
 
     void
     clear()
@@ -190,10 +232,22 @@ struct composite_parser_base {
 
     parser_state
     finish()
-    {
-        return finish(indexes{});
-    }
+    { return finish(indexes{}); }
 
+    template < typename InputIterator >
+    InputIterator
+    parse(InputIterator begin, InputIterator end)
+    {
+        auto p = begin;
+        for (; p != end && _rebind().want_more(); ++p) {
+            _rebind().feed_char(*p);
+        }
+        if (!_rebind().done())
+            _rebind().finish();
+        if (_rebind().failed())
+            return begin;
+        return p;
+    }
 
 protected:
     template < ::std::size_t ... Indexes >
@@ -270,6 +324,13 @@ protected:
         }};
         return _table;
     }
+private:
+    static_final_type&
+    _rebind()
+    { return static_cast<static_final_type&>(*this); }
+    static_final_type const&
+    _rebind() const
+    { return static_cast<static_final_type const&>(*this); }
 };
 
 /**
@@ -277,8 +338,8 @@ protected:
  * done or all fail.
  */
 template < typename ... Alternatives >
-struct alternatives_parser : composite_parser_base<Alternatives...> {
-    using base_type         = composite_parser_base<Alternatives...>;
+struct alternatives_parser : composite_parser_base< alternatives_parser<Alternatives...>, Alternatives...> {
+    using base_type         = composite_parser_base< alternatives_parser<Alternatives...>, Alternatives...>;
     using parsers_tuple     = typename base_type::parsers_tuple;
     using indexes           = typename base_type::indexes;
     using value_type        = typename combine_result_type< typename Alternatives::value_type ... >::type;
@@ -410,13 +471,16 @@ private:
  * is done. If a parser in the chain fails, will fail.
  */
 template < typename ... Parsers >
-struct sequental_parser : composite_parser_base<Parsers...> {
-    using base_type         = composite_parser_base<Parsers...>;
+struct sequental_parser : composite_parser_base< sequental_parser<Parsers...>, Parsers...> {
+    using base_type         = composite_parser_base< sequental_parser<Parsers...>, Parsers...>;
     using parsers_tuple     = typename base_type::parsers_tuple;
     using indexes           = typename base_type::indexes;
 
     static constexpr ::std::size_t size = sizeof ... (Parsers);
-    using value_type    = ::std::tuple< typename Parsers::value_type ... >;
+    using value_indexes     = typename ::psst::meta::find_index_if<
+                                    parser_value_not_ignored, Parsers... >::type;
+    using value_type        = typename make_result_tuple<Parsers...>::type;
+    using value_extractor   = parser_value_extract<value_indexes>;
 
     sequental_parser() : current_{0}, failed_{false} {}
 
@@ -490,8 +554,12 @@ struct sequental_parser : composite_parser_base<Parsers...> {
     value_type
     value() const
     {
-        return value( indexes{} );
+        return value_extractor::get(parsers_);
     }
+
+    parser_state
+    status() const
+    { return current_state(); }
 private:
     using base_type::state_of;
 
@@ -504,14 +572,6 @@ private:
             return state_of(current_);
         return parser_state::done;
     }
-
-    template < ::std::size_t ... Indexes >
-    value_type
-    value(::std::integer_sequence<::std::size_t, Indexes...> const&) const
-    {
-        return ::std::make_tuple(::std::get<Indexes>(parsers_).value() ... );
-    }
-
 private:
     using base_type::parsers_;
     ::std::size_t   current_;

@@ -8,6 +8,7 @@
 #ifndef TIP_IRI_DETAIL_IRI_PART_HPP_
 #define TIP_IRI_DETAIL_IRI_PART_HPP_
 
+#include <tip/iri/detail/char_class.hpp>
 #include <tip/iri/detail/char_classes.hpp>
 
 namespace tip {
@@ -27,11 +28,12 @@ enum class iri_part {
     host            = reg_name | ipv4_address | ip_literal,
     port            = ip_future     * 2,
     authority       = user_info | host | port,
-    path_nc_segment = port          * 2,
-    path_segment    = path_nc_segment *2,
-    path            = path_segment  | path_nc_segment,
-    query_param     = path_segment  * 2,
-    query_value     = query_param   * 2,
+    path_nc_segment = port              * 2,
+    path_nc         = path_nc_segment   * 2,
+    path_segment    = path_nc           * 2,
+    path            = path_segment      * 2,
+    query_param     = path_segment      * 2,
+    query_value     = query_param       * 2,
     query           = query_param | query_value,
     fragment        = query_value   * 2
 };
@@ -105,13 +107,18 @@ using reg_name_chars        = unique_sort< join< iunreserved_chars, sub_delim_ch
 
 using fragment_chars        = unique_sort< join< ipchars, char_sequence< '/', '?' > >::type >::type;
 
+using path_nc_chars         = unique_sort< join< ipchars_nc, char_sequence<'/'> >::type >::type;
+using path_chars            = unique_sort< join< ipchars, char_sequence<'/'> >::type >::type;
+
 
 using schema_class      = iri_part_class< schema_chars,     iri_part::schema        >;
 using ipv4_class        = iri_part_class< ipv4_chars,       iri_part::ipv4_address  >;
 using ipv6_class        = iri_part_class< ipv6_chars,       iri_part::ipv6_address  >;
 using reg_name_class    = iri_part_class< reg_name_chars,   iri_part::reg_name      >;
 using path_seg_nc_class = iri_part_class< ipchars_nc,       iri_part::path_nc_segment >;
+using path_nc_class     = iri_part_class< path_nc_chars,    iri_part::path_nc       >;
 using path_seg_class    = iri_part_class< ipchars,          iri_part::path_segment  >;
+using path_class        = iri_part_class< path_chars,       iri_part::path          >;
 
 using fragment_class    = iri_part_class< fragment_chars,   iri_part::fragment      >;
 
@@ -121,7 +128,9 @@ using iri_parts_table_base = character_class_table<128, iri_part,
         ipv6_class,
         reg_name_class,
         path_seg_nc_class,
-        path_seg_class
+        path_nc_class,
+        path_seg_class,
+        path_class
     >;
 
 } /* namespace char_classes */

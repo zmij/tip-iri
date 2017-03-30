@@ -283,8 +283,7 @@ struct escape_sequence_parser
     value_type
     value() const
     {
-        auto v = parser_.value();
-        return ::std::get<1>(v);
+        return parser_.value();
     }
 
     void
