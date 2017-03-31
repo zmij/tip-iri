@@ -23,7 +23,7 @@ PrintTo(query const& val, ::std::ostream* os)
 
 namespace test {
 
-using query_parser = v2::parser<iri_part::query>;
+using query_parser = parsers::parser<iri_part::query>;
 PARSER_TEST(query_parser, Query,
     ::testing::Values(
         ParseQuery::make_test_data( "?foo=bar", query{ { "foo", "bar" } } ),

@@ -5,26 +5,24 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_PARSERS_REPETITION_PARSER_HPP_
-#define TIP_IRI_PARSERS_REPETITION_PARSER_HPP_
+#ifndef PUSHKIN_PARSERS_REPETITION_PARSER_HPP_
+#define PUSHKIN_PARSERS_REPETITION_PARSER_HPP_
 
-#include <tip/iri/parsers/parser_state_base.hpp>
-#include <tip/iri/parsers/bool_ops.hpp>
-#include <tip/iri/parsers/append.hpp>
+#include <pushkin/parsers/parser_state_base.hpp>
+#include <pushkin/parsers/detail/bool_ops.hpp>
+#include <pushkin/parsers/detail/append.hpp>
 #include <string>
 #include <boost/variant.hpp>
 
-namespace tip {
-namespace iri {
-inline namespace v2 {
-namespace detail {
+namespace psst {
+namespace parsers {
 
 template < typename Parser, typename OutputType,
         ::std::size_t MinRep = 1, ::std::size_t MaxRep = 0 >
 struct repetition_parser
-    : detail::parser_state_base<repetition_parser<Parser, OutputType, MinRep, MaxRep>> {
+    : parser_state_base<repetition_parser<Parser, OutputType, MinRep, MaxRep>> {
 
-    using base_type         = detail::parser_state_base<repetition_parser<Parser, OutputType, MinRep, MaxRep>>;
+    using base_type         = parser_state_base<repetition_parser<Parser, OutputType, MinRep, MaxRep>>;
     using value_type        = OutputType;
     using parser_type       = Parser;
     using parser_value_type = typename parser_type::value_type;
@@ -51,11 +49,11 @@ struct repetition_parser
         if (want_more()) {
             this->start();
             auto res = parser_.feed_char(c);
-            if (detail::failed(res.first)) {
+            if (parsers::failed(res.first)) {
                 finish();
                 return base_type::consumed(res.second);
             }
-            if (detail::done(res.first)) {
+            if (parsers::done(res.first)) {
                 ++rep_count_;
                 append(val_, parser_.value());
                 parser_.clear();
@@ -79,7 +77,7 @@ struct repetition_parser
         if (want_more()) {
             if (!parser_.empty()) {
                 auto res = parser_.finish();
-                if (!detail::failed(res)) {
+                if (!parsers::failed(res)) {
                     ++rep_count_;
                     append(val_, parser_.value());
                 }
@@ -118,9 +116,9 @@ private:
 template < typename Head, typename Tail, typename OutputType,
         ::std::size_t MinRep = 1, ::std::size_t MaxRep = 0 >
 struct repeat_tail_parser
-    : detail::parser_state_base<repeat_tail_parser<Head, Tail, OutputType, MinRep, MaxRep>> {
+    : parser_state_base<repeat_tail_parser<Head, Tail, OutputType, MinRep, MaxRep>> {
 
-    using base_type         = detail::parser_state_base<repeat_tail_parser<Head, Tail, OutputType, MinRep, MaxRep>>;
+    using base_type         = parser_state_base<repeat_tail_parser<Head, Tail, OutputType, MinRep, MaxRep>>;
     using value_type        = OutputType;
     using head_parser_type  = Head;
     using tail_parser_type  = Tail;
@@ -150,21 +148,21 @@ struct repeat_tail_parser
             feed_result res{ parser_state::empty, false };
             if (head_.want_more()) {
                 res = head_.feed_char(c);
-                if (detail::failed(res.first)) {
+                if (parsers::failed(res.first)) {
                     finish();
                     return base_type::fail(res.second);
                 }
-                if (detail::done(res.first)) {
+                if (parsers::done(res.first)) {
                     append(val_, head_.value());
                 }
             }
             if (!res.second) {
                 res = tail_.feed_char(c);
-                if (detail::failed(res.first)) {
+                if (parsers::failed(res.first)) {
                     finish();
                     return base_type::consumed(res.second);
                 }
-                if (detail::done(res.first)) {
+                if (parsers::done(res.first)) {
                     ++rep_count_;
                     append(val_, tail_.value());
                     tail_.clear();
@@ -195,7 +193,7 @@ struct repeat_tail_parser
             }
             if (!tail_.empty()) {
                 auto res = tail_.finish();
-                if (!detail::failed(res)) {
+                if (!parsers::failed(res)) {
                     ++rep_count_;
                     append(val_, tail_.value());
                 }
@@ -233,11 +231,9 @@ private:
     ::std::size_t       rep_count_;
 };
 
-} /* namespace detail */
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
-#endif /* TIP_IRI_PARSERS_REPETITION_PARSER_HPP_ */
+#endif /* PUSHKIN_PARSERS_REPETITION_PARSER_HPP_ */

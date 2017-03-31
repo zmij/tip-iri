@@ -9,11 +9,12 @@
 #define TIP_IRI_PARSERS_IRI_PARSER_BASE_HPP_
 
 #include <tip/iri/detail/iri_part.hpp>
-#include <tip/iri/parsers/parser_state_base.hpp>
+#include <pushkin/parsers/parser_state_base.hpp>
 
 namespace tip {
 namespace iri {
 inline namespace v2 {
+namespace parsers {
 
 namespace detail {
 
@@ -35,7 +36,7 @@ struct part_traits : detail::part_traits_base<P> {};
 namespace detail {
 
 template < typename Final, iri_part P >
-struct parser_base : parser_state_base< Final > {
+struct parser_base : ::psst::parsers::parser_state_base< Final > {
     using traits_type   = part_traits<P>;
     using type          = typename traits_type::type;
 };
@@ -45,6 +46,7 @@ struct parser_base : parser_state_base< Final > {
 template < iri_part P >
 struct parser : detail::parser_base< parser<P>, P> {};
 
+} /* namespace parsers */
 } /* namespace v2 */
 } /* namespace iri */
 } /* namespace tip */

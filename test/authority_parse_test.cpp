@@ -14,10 +14,7 @@ namespace tip {
 namespace iri {
 
 inline namespace v2 {
-
-
-} /* namespace v2 */
-
+namespace parsers {
 
 namespace test {
 
@@ -38,6 +35,17 @@ PARSER_TEST(schema_parser, Schema,
     ::testing::Values(
         ParseSchema::make_test_data( "" ),
         ParseSchema::make_test_data( "1http" )
+    )
+);
+
+using userinfo_parser = parser< iri_part::user_info >;
+PARSER_TEST(userinfo_parser, UserInfo,
+    ::testing::Values(
+        ParseUserInfo::make_test_data( "user", userinfo{ "user" } ),
+        ParseUserInfo::make_test_data( "user:password", userinfo{ "user", "password" } )
+    ),
+    ::testing::Values(
+        ParseUserInfo::make_test_data( "" )
     )
 );
 
@@ -74,27 +82,29 @@ PARSER_TEST(host_parser, Host,
     )
 );
 
-using authority_parser = parser<iri_part::authority>;
-PARSER_TEST(authority_parser, Authority,
-    ::testing::Values(
-        ParseAuthority::make_test_data("[::1]:8080",        host{ipv6_localhost}, 8080),
-        ParseAuthority::make_test_data("google.com",        host{"google.com"s}, 0),
-        ParseAuthority::make_test_data("google.com:80",     host{"google.com"s}, 80),
-        ParseAuthority::make_test_data("localhost:8080",    host{"localhost"s}, 8080),
-        ParseAuthority::make_test_data("127.0.0.1:8080",    host{ipv4_localhost}, 8080),
-        ParseAuthority::make_test_data("127.0.0.1",         host{ipv4_localhost}, 0),
-        ParseAuthority::make_test_data("[::1]",             host{ipv6_localhost}, 0)
-    ),
-    ::testing::Values(
-        ParseAuthority::make_test_data("127.0.0.1:/"),
-        ParseAuthority::make_test_data( "[]" ),
-        ParseAuthority::make_test_data( "" ),
-        ParseAuthority::make_test_data( ":80" ),
-        ParseAuthority::make_test_data( " " )
-    )
-);
+//using authority_parser = parser<iri_part::authority>;
+//PARSER_TEST(authority_parser, Authority,
+//    ::testing::Values(
+//        ParseAuthority::make_test_data("[::1]:8080",        host{ipv6_localhost}, 8080),
+//        ParseAuthority::make_test_data("google.com",        host{"google.com"s}, 0),
+//        ParseAuthority::make_test_data("google.com:80",     host{"google.com"s}, 80),
+//        ParseAuthority::make_test_data("localhost:8080",    host{"localhost"s}, 8080),
+//        ParseAuthority::make_test_data("127.0.0.1:8080",    host{ipv4_localhost}, 8080),
+//        ParseAuthority::make_test_data("127.0.0.1",         host{ipv4_localhost}, 0),
+//        ParseAuthority::make_test_data("[::1]",             host{ipv6_localhost}, 0)
+//    ),
+//    ::testing::Values(
+//        ParseAuthority::make_test_data("127.0.0.1:/"),
+//        ParseAuthority::make_test_data( "[]" ),
+//        ParseAuthority::make_test_data( "" ),
+//        ParseAuthority::make_test_data( ":80" ),
+//        ParseAuthority::make_test_data( " " )
+//    )
+//);
 
 } /* namespace test */
+} /* namespace parsers */
+} /* namespace v2 */
 } /* namespace iri */
 } /* namespace tip */
 

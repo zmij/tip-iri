@@ -5,8 +5,8 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_PARSERS_APPEND_HPP_
-#define TIP_IRI_PARSERS_APPEND_HPP_
+#ifndef PUSHKIN_PARSERS_APPEND_HPP_
+#define PUSHKIN_PARSERS_APPEND_HPP_
 
 #include <string>
 #include <tuple>
@@ -14,26 +14,17 @@
 #include <map>
 #include <boost/variant.hpp>
 
-namespace tip {
-namespace iri {
-inline namespace v2 {
+namespace psst {
+namespace parsers {
+
+template < typename Output, typename Input >
+void
+append(Output& out, Input&& in);
+
 namespace detail {
 
 template < typename Output, typename Input >
 struct appender;
-
-template < typename Output, typename Input >
-void
-append(Output& out, Input&& in)
-{
-    using appender_type = appender<
-                                typename ::std::decay<Output>::type,
-                                typename ::std::remove_const<
-                                    typename ::std::decay<Input>::type
-                                >::type
-                          >;
-    appender_type::append(out, ::std::forward<Input>(in));
-}
 
 template <>
 struct appender< ::std::string, char > {
@@ -88,10 +79,10 @@ template < ::std::size_t N >
 struct append_nth {
     template < typename T, typename Tuple >
     static void
-    append(T& val, Tuple const& var)
+    append_element(T& val, Tuple const& var)
     {
-        append_nth<N - 1>::append(val, var);
-        detail::append(val, ::std::get<N>(var));
+        append_nth<N - 1>::append_element(val, var);
+        append(val, ::std::get<N>(var));
     }
 };
 
@@ -99,9 +90,9 @@ template <>
 struct append_nth<0> {
     template < typename T, typename Tuple >
     static void
-    append(T& val, Tuple const& var)
+    append_element(T& val, Tuple const& var)
     {
-        detail::append(val, ::std::get<0>(var));
+        append(val, ::std::get<0>(var));
     }
 };
 
@@ -112,7 +103,7 @@ struct appender < T, ::std::tuple<U...> > {
     static void
     append(T& val, ::std::tuple<U...> const& var)
     {
-        append_nth<sizeof ... (U) - 1>::append(val, var);
+        append_nth<sizeof ... (U) - 1>::append_element(val, var);
     }
 };
 
@@ -168,9 +159,23 @@ struct appender< ::std::multimap<K, V, Rest...>, ::std::tuple<K, V> > {
 };
 
 } /* namespace detail */
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+
+template < typename Output, typename Input >
+void
+append(Output& out, Input&& in)
+{
+    using appender_type = detail::appender<
+                                typename ::std::decay<Output>::type,
+                                typename ::std::remove_const<
+                                    typename ::std::decay<Input>::type
+                                >::type
+                          >;
+    appender_type::append(out, ::std::forward<Input>(in));
+}
 
 
-#endif /* TIP_IRI_PARSERS_APPEND_HPP_ */
+} /* namespace parsers */
+} /* namespace psst */
+
+
+#endif /* PUSHKIN_PARSERS_APPEND_HPP_ */

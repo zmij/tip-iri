@@ -8,25 +8,27 @@
 #ifndef TIP_IRI_PARSERS_IP_ADDRESS_PARSERS_HPP_
 #define TIP_IRI_PARSERS_IP_ADDRESS_PARSERS_HPP_
 
-#include <tip/iri/detail/char_class.hpp>
+#include <pushkin/parsers/char_class.hpp>
+#include <pushkin/parsers/int_parser.hpp>
+#include <pushkin/parsers/literal_parser.hpp>
+#include <pushkin/parsers/composite_parsers.hpp>
+
 #include <tip/iri/parsers/iri_parser_base.hpp>
-#include <tip/iri/parsers/int_parser.hpp>
-#include <tip/iri/parsers/literal_parser.hpp>
-#include <tip/iri/parsers/composite_parsers.hpp>
 
 #include <tip/iri/ip_address.hpp>
 
 namespace tip {
 namespace iri {
 inline namespace v2 {
+namespace parsers {
 
 template <>
 struct parser<iri_part::ipv4_address> :
         detail::parser_base< parser<iri_part::ipv4_address>, iri_part::ipv4_address> {
     using value_type    = ipv4_address;
-    using digit_parser  = uint_parser<ipv4_address::repr, 10, 3>;
-    using parser_state  = detail::parser_state;
-    using feed_result   = detail::feed_result;
+    using digit_parser  = ::psst::parsers::uint_parser<ipv4_address::repr, 10, 3>;
+    using parser_state  = ::psst::parsers::parser_state;
+    using feed_result   = ::psst::parsers::feed_result;
     using base_type     = detail::parser_base< parser<iri_part::ipv4_address>, iri_part::ipv4_address>;
 
     constexpr parser()
@@ -45,6 +47,8 @@ struct parser<iri_part::ipv4_address> :
     feed_result
     feed_char(char c)
     {
+        using ::psst::parsers::char_classification;
+        using ::psst::parsers::char_type;
         if (want_more()) {
             auto cls = char_classification::classify(c);
             if (any(cls & char_type::digit)) {
@@ -137,9 +141,9 @@ struct parser<iri_part::ipv6_address>
     using base_type     = detail::parser_base< parser<iri_part::ipv6_address>, iri_part::ipv6_address>;
     using value_type    = ipv6_address;
     using element       = ipv6_address::element;
-    using parser_state  = detail::parser_state;
-    using feed_result   = detail::feed_result;
-    using digit_parser  = uint_parser<element, 16, 4>;
+    using parser_state  = ::psst::parsers::parser_state;
+    using feed_result   = ::psst::parsers::feed_result;
+    using digit_parser  = ::psst::parsers::uint_parser<element, 16, 4>;
     using ipv4_parser   = parser< iri_part::ipv4_address >;
 
     constexpr parser()
@@ -150,6 +154,8 @@ struct parser<iri_part::ipv6_address>
     feed_result
     feed_char(char c)
     {
+        using ::psst::parsers::char_classification;
+        using ::psst::parsers::char_type;
         bool consumed = false;
         if (want_more()) {
             auto cls = char_classification::classify(c);
@@ -204,7 +210,7 @@ struct parser<iri_part::ipv6_address>
                         return fail(false);
                     if (stage_ == tail && head_size_ + tail_size_ > 4)
                         return fail(false);
-                    ipv4_parser_ = ipv4_parser{ detail::literal_hex_to_dec(hextet_.value()) };
+                    ipv4_parser_ = ipv4_parser{ v2::detail::literal_hex_to_dec(hextet_.value()) };
                     hextet_.clear();
                     if (ipv4_parser_.failed())
                         return fail(false);
@@ -340,67 +346,13 @@ private:
  */
 template <>
 struct parser<iri_part::ip_literal>
-    : detail::sequental_parser<
-      literal_parser<'['>,
-      parser<iri_part::ipv6_address>,
-      literal_parser<']'>
+    : ::psst::parsers::sequental_parser<
+        ::psst::parsers::literal_parser<'['>,
+        parser<iri_part::ipv6_address>,
+        ::psst::parsers::literal_parser<']'>
   > {};
-//        : detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal> {
-//    using base_type     = detail::parser_base< parser<iri_part::ip_literal>, iri_part::ip_literal>;
-//    using value_type    = ipv6_address;
-//    using parser_state  = detail::parser_state;
-//    using feed_result   = detail::feed_result;
-//    using ipv6_parser   = parser<iri_part::ipv6_address>;
-//
-//    using seq_parser    = detail::sequental_parser<
-//                                literal_parser<'['>,
-//                                parser<iri_part::ipv6_address>,
-//                                literal_parser<']'>
-//                            >;
-//
-//    parser()
-//        : parser_{} {}
-//
-//    feed_result
-//    feed_char(char c)
-//    {
-//        bool consumed = false;
-//        if (want_more()) {
-//            auto res = parser_.feed_char(c);
-//            if (detail::failed(res.first))
-//                return fail(res.second);
-//            if (detail::done(res.first))
-//                return base_type::finish(res.second);
-//            consumed = res.second;
-//        }
-//        return base_type::consumed(consumed);
-//    }
-//
-//    parser_state
-//    finish()
-//    {
-//        if (want_more())
-//            return fail();
-//        return state;
-//    }
-//
-//    value_type
-//    value() const
-//    {
-//        return parser_.value();
-//    }
-//
-//    void
-//    clear()
-//    {
-//        parser_.clear();
-//        base_type::reset();
-//    }
-//private:
-//    seq_parser      parser_;
-//    //ipv6_parser        ipv6_;
-//};
 
+} /* namespace parsers */
 } /* namespace v2 */
 } /* namespace iri */
 } /* namespace tip */

@@ -9,6 +9,8 @@
 #define TIP_IRI_PARSERS_AUTHORITY_PARSER_HPP_
 
 #include <tip/iri/host.hpp>
+#include <tip/iri/authority.hpp>
+
 #include <tip/iri/parsers/ip_address_parsers.hpp>
 #include <tip/iri/parsers/reg_name_parser.hpp>
 
@@ -17,6 +19,7 @@
 namespace tip {
 namespace iri {
 inline namespace v2 {
+namespace parsers {
 
 template<>
 struct parser<iri_part::schema>
@@ -24,14 +27,16 @@ struct parser<iri_part::schema>
 
     using value_type        = ::std::string;
     using base_type         = detail::parser_base<parser<iri_part::schema>, iri_part::schema>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using parser_state      = ::psst::parsers::parser_state;
+    using feed_result       = ::psst::parsers::feed_result;
 
     parser() {}
 
     feed_result
     feed_char(char c)
     {
+        using ::psst::parsers::char_classification;
+        using ::psst::parsers::char_type;
         bool consumed = false;
         if (want_more()) {
             auto cls = char_classification::classify(c);
@@ -82,16 +87,46 @@ private:
 };
 
 template <>
+struct parser<iri_part::user>
+    : ::psst::parsers::repetition_parser<
+          ::psst::parsers::alternatives_parser<
+              ::psst::parsers::char_class_parser<iri_part, iri_part::user>,
+              pct_encoded_sequence_parser
+          >,
+          ::std::string
+      >{};
+
+template <>
+struct parser<iri_part::password>
+    : ::psst::parsers::repetition_parser<
+          ::psst::parsers::alternatives_parser<
+              ::psst::parsers::char_class_parser<iri_part, iri_part::password>,
+              pct_encoded_sequence_parser
+          >,
+          ::std::string
+      >{};
+
+template <>
+struct parser<iri_part::user_info>
+    : ::psst::parsers::repeat_tail_parser<
+          parser< iri_part::user >,
+          ::psst::parsers::sequental_parser<
+              ::psst::parsers::literal_parser<':'>,
+              parser< iri_part::password >
+          >,
+          userinfo, 0, 1 > {};
+
+template <>
 struct parser<iri_part::host>
     : detail::parser_base<parser<iri_part::host>, iri_part::host> {
 
     using value_type        = v2::host;
 
     using base_type         = detail::parser_base<parser<iri_part::host>, iri_part::host>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using parser_state      = ::psst::parsers::parser_state;
+    using feed_result       = ::psst::parsers::feed_result;
 
-    using sub_parsers       = detail::alternatives_parser<
+    using sub_parsers       = ::psst::parsers::alternatives_parser<
                                 parser<iri_part::ipv4_address>,
                                 parser<iri_part::ip_literal>,
                                 parser<iri_part::reg_name>
@@ -145,8 +180,8 @@ struct parser<iri_part::port>
     using value_type    = ::std::uint16_t;
 
     using base_type = detail::parser_base<parser<iri_part::port>, iri_part::port>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using parser_state      = ::psst::parsers::parser_state;
+    using feed_result       = ::psst::parsers::feed_result;
 
     constexpr parser() : port_{} {}
 
@@ -195,7 +230,7 @@ struct parser<iri_part::port>
         return port_.value();
     }
 private:
-    using int_parser = uint_parser<::std::uint32_t, 10, 5>;
+    using int_parser = ::psst::parsers::uint_parser<::std::uint32_t, 10, 5>;
 
     int_parser port_;
 };
@@ -209,8 +244,8 @@ struct parser<iri_part::authority>
     using value_type    = ::std::tuple<host_parser::value_type, port_parser::value_type>;
 
     using base_type = detail::parser_base<parser<iri_part::authority>, iri_part::authority>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using parser_state      = ::psst::parsers::parser_state;
+    using feed_result       = ::psst::parsers::feed_result;
 
     parser() {}
 
@@ -295,9 +330,31 @@ operator <<(::std::ostream& os, ::std::tuple< host, ::std::uint16_t > const& val
 }
 
 
+} /* namespace parsers */
 } /* namespace v2 */
 } /* namespace iri */
 } /* namespace tip */
+
+namespace psst {
+namespace parsers {
+namespace detail {
+
+template <>
+struct appender<::tip::iri::userinfo, ::std::string> {
+    static void
+    append(::tip::iri::userinfo& u, ::std::string const& s)
+    {
+        if (u.user.empty())
+            u.user = s;
+        else
+            u.password = s;
+    }
+};
+
+} /* namespace detail */
+} /* namespace parsers */
+} /* namespace psst */
+
 
 
 #endif /* TIP_IRI_DETAIL_AUTHORITY_PARSER_HPP_ */

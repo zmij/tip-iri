@@ -8,9 +8,9 @@
 #ifndef TIP_IRI_PARSERS_HEX_ENCODED_PARSER_HPP_
 #define TIP_IRI_PARSERS_HEX_ENCODED_PARSER_HPP_
 
-#include <tip/iri/parsers/int_parser.hpp>
-#include <tip/iri/parsers/literal_parser.hpp>
-#include <tip/iri/parsers/composite_parsers.hpp>
+#include <pushkin/parsers/int_parser.hpp>
+#include <pushkin/parsers/literal_parser.hpp>
+#include <pushkin/parsers/composite_parsers.hpp>
 
 namespace tip {
 namespace iri {
@@ -21,13 +21,13 @@ inline namespace v2 {
  * must be consumed by the owner parser.
  */
 struct pct_encoded_parser
-        : detail::parser_state_base<pct_encoded_parser> {
+        : ::psst::parsers::parser_state_base<pct_encoded_parser> {
     using value_type    = unsigned char;
-    using base_type     = detail::parser_state_base<pct_encoded_parser>;
-    using parser_state  = detail::parser_state;
-    using feed_result   = detail::feed_result;
+    using base_type     = ::psst::parsers::parser_state_base<pct_encoded_parser>;
+    using parser_state  = ::psst::parsers::parser_state;
+    using feed_result   = ::psst::parsers::feed_result;
 
-    using hex_parser    = uint_parser<value_type, 16, 2, 2>;
+    using hex_parser    = ::psst::parsers::uint_parser<value_type, 16, 2, 2>;
 
     constexpr pct_encoded_parser() : hex_{} {}
 
@@ -92,6 +92,10 @@ struct hex_range_check<hex_range::ucschar> {
     static bool
     check(::std::uint32_t v)
     {
+        using ::psst::parsers::char_classification;
+        using ::psst::parsers::codepoint_size;
+        using ::psst::parsers::char_type;
+
         auto res = (   0xa0 <= v && v <=  0xd7ff)
             || ( 0xf900 <= v && v <=  0xfdcf)
             || ( 0xfdf0 <= v && v <=  0xffef)
@@ -156,12 +160,12 @@ struct hex_range_check<hex_range::iprivate> {
  */
 template < hex_range R >
 struct hex_encoded_parser
-        : detail::parser_state_base<hex_encoded_parser<R>> {
+        : ::psst::parsers::parser_state_base<hex_encoded_parser<R>> {
     using value_type    = ::std::string;
-    using base_type     = detail::parser_state_base<hex_encoded_parser<R>>;
-    using parser_state  = detail::parser_state;
-    using feed_result   = detail::feed_result;
-    using hex_parser    = uint_parser<::std::uint32_t, 16, 8, 2>;
+    using base_type     = ::psst::parsers::parser_state_base<hex_encoded_parser<R>>;
+    using parser_state  = ::psst::parsers::parser_state;
+    using feed_result   = ::psst::parsers::feed_result;
+    using hex_parser    = ::psst::parsers::uint_parser<::std::uint32_t, 16, 8, 2>;
     using check_type    = detail::hex_range_check<R>;
 
     using base_type::want_more;
@@ -239,16 +243,16 @@ private:
 
 template < typename SeqParser, char ... Escape >
 struct escape_sequence_parser
-    : detail::parser_state_base<escape_sequence_parser<SeqParser, Escape...> > {
+    : ::psst::parsers::parser_state_base<escape_sequence_parser<SeqParser, Escape...> > {
 
     using value_parser  = SeqParser;
     using value_type    = typename value_parser::value_type;
-    using base_type     = detail::parser_state_base<escape_sequence_parser<SeqParser, Escape...>>;
-    using parser_state  = detail::parser_state;
-    using feed_result   = detail::feed_result;
+    using base_type     = ::psst::parsers::parser_state_base<escape_sequence_parser<SeqParser, Escape...>>;
+    using parser_state  = ::psst::parsers::parser_state;
+    using feed_result   = ::psst::parsers::feed_result;
 
-    using parser_seq    = detail::sequental_parser<
-                                literal_parser<Escape...>,
+    using parser_seq    = ::psst::parsers::sequental_parser<
+                                ::psst::parsers::literal_parser<Escape...>,
                                 value_parser
                             >;
 
@@ -261,9 +265,9 @@ struct escape_sequence_parser
         bool consumed = false;
         if (want_more()) {
             auto res = parser_.feed_char(c);
-            if (detail::failed(res.first))
+            if (failed(res.first))
                 return fail(res.second);
-            if (detail::done(res.first))
+            if (done(res.first))
                 return base_type::finish(res.second);
             consumed = res.second;
         }
@@ -274,7 +278,7 @@ struct escape_sequence_parser
     {
         if (want_more()) {
             auto res = parser_.finish();
-            if (detail::failed(res))
+            if (failed(res))
                 return fail();
         }
         return base_type::finish();

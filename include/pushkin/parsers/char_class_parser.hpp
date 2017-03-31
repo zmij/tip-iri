@@ -5,25 +5,22 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_PARSERS_CHAR_CLASS_PARSER_HPP_
-#define TIP_IRI_PARSERS_CHAR_CLASS_PARSER_HPP_
+#ifndef PUSHKIN_PARSERS_CHAR_CLASS_PARSER_HPP_
+#define PUSHKIN_PARSERS_CHAR_CLASS_PARSER_HPP_
 
-#include <tip/iri/detail/char_class.hpp>
-#include <tip/iri/parsers/parser_state_base.hpp>
+#include <pushkin/parsers/char_class.hpp>
+#include <pushkin/parsers/parser_state_base.hpp>
 
-namespace tip {
-namespace iri {
-inline namespace v2 {
+namespace psst {
+namespace parsers {
 
 template < typename T, T Filter >
 struct char_class_parser
-        : detail::parser_state_base<char_class_parser< T, Filter >> {
+        : parser_state_base<char_class_parser< T, Filter >> {
 
     using classificator = typename char_classification_traits<T>::type;
     static constexpr T filter = Filter;
-    using base_type         = detail::parser_state_base<char_class_parser< T, Filter >>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using base_type         = parser_state_base<char_class_parser< T, Filter >>;
     using value_type        = char;
 
     constexpr char_class_parser() : val_{0} {}
@@ -71,12 +68,10 @@ private:
 
 template < typename T, T Filter, bool AllowEmpty = false >
 struct char_class_sequence_parser
-        : detail::parser_state_base<char_class_sequence_parser<T, Filter>> {
+        : parser_state_base<char_class_sequence_parser<T, Filter>> {
 
     using classificator = typename char_classification_traits<T>::type;
-    using base_type         = detail::parser_state_base<char_class_sequence_parser<T, Filter>>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using base_type         = parser_state_base<char_class_sequence_parser<T, Filter>>;
     using value_type        = ::std::string;
     static constexpr T filter           = Filter;
     static constexpr bool allow_empty   = AllowEmpty;
@@ -125,10 +120,9 @@ private:
     value_type  val_;
 };
 
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
-#endif /* TIP_IRI_PARSERS_CHAR_CLASS_PARSER_HPP_ */
+#endif /* PUSHKIN_PARSERS_CHAR_CLASS_PARSER_HPP_ */

@@ -6,14 +6,11 @@
  */
 
 #include <gtest/gtest.h>
-#include <tip/iri/parsers/int_parser.hpp>
+#include <pushkin/parsers/int_parser.hpp>
 #include <string>
 
-namespace tip {
-namespace iri {
-
-inline namespace v2 {
-namespace detail {
+namespace psst {
+namespace parsers {
 
 void
 PrintTo(parser_state s, ::std::ostream* os)
@@ -34,11 +31,6 @@ PrintTo(parser_state s, ::std::ostream* os)
     }
 }
 
-} /* namespace detail */
-} /* namespace v2 */
-
-
-
 namespace test {
 
 TEST(IntParse, Dec3)
@@ -53,10 +45,10 @@ TEST(IntParse, Dec3)
         for (auto c = test_str; *c != 0; ++c) {
             auto s = p.feed_char(*c);
             if (c - test_str < 2)
-                EXPECT_EQ(parser_type::parser_state::in_progress, s.first)
+                EXPECT_EQ(parser_state::in_progress, s.first)
                     << "In progress at " << *c;
             else
-                EXPECT_EQ(parser_type::parser_state::done, s.first)
+                EXPECT_EQ(parser_state::done, s.first)
                     << "Done at " << *c;
         }
         EXPECT_TRUE(p.done());
@@ -68,7 +60,7 @@ TEST(IntParse, Dec3)
         parser_type p;
         EXPECT_TRUE(p.want_more());
         EXPECT_TRUE(p.empty());
-        EXPECT_EQ(parser_type::parser_state::failed, p.feed_char('a').first);
+        EXPECT_EQ(parser_state::failed, p.feed_char('a').first);
         EXPECT_FALSE(p.done());
         EXPECT_TRUE(p.failed());
         EXPECT_FALSE(p.want_more());
@@ -84,10 +76,10 @@ TEST(IntParse, Dec3)
         for (auto c = test_str; *c != 0; ++c) {
             auto s = p.feed_char(*c);
             if (c - test_str < 2)
-                EXPECT_EQ(parser_type::parser_state::in_progress, s.first)
+                EXPECT_EQ(parser_state::in_progress, s.first)
                     << "In progress at " << *c;
             else
-                EXPECT_EQ(parser_type::parser_state::done, s.first)
+                EXPECT_EQ(parser_state::done, s.first)
                     << "Done at " << *c;
         }
         EXPECT_TRUE(p.done());
@@ -120,10 +112,10 @@ TEST(IntParse, Hex4)
         for (auto c = test_str; *c != 0; ++c) {
             auto s = p.feed_char(*c);
             if (c - test_str < 3)
-                EXPECT_EQ(parser_type::parser_state::in_progress, s.first)
+                EXPECT_EQ(parser_state::in_progress, s.first)
                     << "In progress at " << *c;
             else
-                EXPECT_EQ(parser_type::parser_state::done, s.first)
+                EXPECT_EQ(parser_state::done, s.first)
                     << "Done at " << *c;
         }
         EXPECT_TRUE(p.done());
@@ -148,6 +140,6 @@ TEST(IntParse, Hex4)
 
 
 } /* namespace test */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 

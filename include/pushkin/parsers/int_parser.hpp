@@ -5,15 +5,14 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_PARSERS_INT_PARSER_HPP_
-#define TIP_IRI_PARSERS_INT_PARSER_HPP_
+#ifndef PUSHKIN_PARSERS_INT_PARSER_HPP_
+#define PUSHKIN_PARSERS_INT_PARSER_HPP_
 
-#include <tip/iri/parsers/parser_state_base.hpp>
-#include <tip/iri/detail/char_class.hpp>
+#include <pushkin/parsers/parser_state_base.hpp>
+#include <pushkin/parsers/char_class.hpp>
 
-namespace tip {
-namespace iri {
-inline namespace v2 {
+namespace psst {
+namespace parsers {
 
 namespace detail {
 
@@ -44,16 +43,14 @@ struct int_parser_chars< 8 > : char_type_constant< char_type::octdigit > {};
 
 template < typename T, ::std::size_t Base = 10,
         ::std::size_t MaxDigits = 0, ::std::size_t MinDigits = 1 >
-struct uint_parser : detail::parser_state_base< uint_parser<T, Base, MaxDigits, MinDigits> > {
+struct uint_parser : parser_state_base< uint_parser<T, Base, MaxDigits, MinDigits> > {
     static_assert( ::std::is_integral<T>::value, "Uint parser instantiated for a non-integral type" );
 
     static constexpr ::std::size_t base         = Base;
     static constexpr ::std::size_t max_digits   = MaxDigits;
     static constexpr ::std::size_t min_digits   = MinDigits;
 
-    using base_type     = detail::parser_state_base< uint_parser<T, Base, MaxDigits, MinDigits> >;
-    using parser_state  = detail::parser_state;
-    using feed_result   = detail::feed_result;
+    using base_type     = parser_state_base< uint_parser<T, Base, MaxDigits, MinDigits> >;
     using char_type     = detail::int_parser_chars<base>;
     using value_type    = T;
 
@@ -126,10 +123,9 @@ private:
 };
 
 
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
-#endif /* TIP_IRI_PARSERS_INT_PARSER_HPP_ */
+#endif /* PUSHKIN_PARSERS_INT_PARSER_HPP_ */

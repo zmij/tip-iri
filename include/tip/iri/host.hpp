@@ -55,6 +55,9 @@ struct host {
     type
     address_type() const
     { return static_cast<type>(data.which()); }
+
+    bool
+    empty() const;
 private:
     /**
      * Will output contents of data. IPv6 address will be output as an IP literal

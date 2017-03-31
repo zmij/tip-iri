@@ -5,19 +5,19 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_PARSERS_COMPOSITE_PARSERS_HPP_
-#define TIP_IRI_PARSERS_COMPOSITE_PARSERS_HPP_
+#ifndef PUSHKIN_PARSERS_COMPOSITE_PARSERS_HPP_
+#define PUSHKIN_PARSERS_COMPOSITE_PARSERS_HPP_
 
-#include <tip/iri/parsers/parser_state_base.hpp>
-#include <tip/iri/parsers/bool_ops.hpp>
-#include <boost/variant.hpp>
+#include <pushkin/parsers/parser_state_base.hpp>
+#include <pushkin/parsers/detail/bool_ops.hpp>
+
 #include <pushkin/meta/algorithm.hpp>
 #include <pushkin/meta/integer_sequence.hpp>
 
-namespace tip {
-namespace iri {
-inline namespace v2 {
-namespace detail {
+#include <boost/variant.hpp>
+
+namespace psst {
+namespace parsers {
 
 constexpr parser_state
 best_state(parser_state s)
@@ -254,43 +254,43 @@ protected:
     constexpr bool
     all_done(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return conjunction( ::std::get<Indexes>(parsers_).done() ... );
+        return detail::conjunction( ::std::get<Indexes>(parsers_).done() ... );
     }
     template < ::std::size_t ... Indexes >
     constexpr bool
     any_done(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return disjunction( ::std::get<Indexes>(parsers_).done() ... );
+        return detail::disjunction( ::std::get<Indexes>(parsers_).done() ... );
     }
     template < ::std::size_t ... Indexes >
     constexpr bool
     all_failed(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return conjunction( ::std::get<Indexes>(parsers_).failed() ... );
+        return detail::conjunction( ::std::get<Indexes>(parsers_).failed() ... );
     }
     template < ::std::size_t ... Indexes >
     constexpr bool
     any_failed(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return disjunction( ::std::get<Indexes>(parsers_).failed() ... );
+        return detail::disjunction( ::std::get<Indexes>(parsers_).failed() ... );
     }
     template < ::std::size_t ... Indexes >
     constexpr bool
     all_finished(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return conjunction( ::std::get<Indexes>(parsers_).finished() ... );
+        return detail::conjunction( ::std::get<Indexes>(parsers_).finished() ... );
     }
     template < ::std::size_t ... Indexes >
     constexpr bool
     any_finished(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return disjunction( ::std::get<Indexes>(parsers_).finished() ... );
+        return detail::disjunction( ::std::get<Indexes>(parsers_).finished() ... );
     }
     template < ::std::size_t ... Indexes >
     bool
     clear(::std::integer_sequence<::std::size_t, Indexes...> const&)
     {
-        return conjunction( clear_parser(::std::get<Indexes>(parsers_)) ... );
+        return detail::conjunction( clear_parser(::std::get<Indexes>(parsers_)) ... );
     }
 
     template < ::std::size_t ... Indexes >
@@ -383,7 +383,7 @@ struct alternatives_parser : composite_parser_base< alternatives_parser<Alternat
         ::std::size_t max_c{0};
         for (::std::size_t idx = 0; idx < size; ++idx) {
             auto state = base_type::state_of(idx);
-            if (!detail::failed(state)) {
+            if (!parsers::failed(state)) {
                 if (counts_[idx] > max_c) {
                     max_c = counts_[idx];
                     max_p = counts_.begin() + idx;
@@ -408,13 +408,13 @@ private:
     constexpr bool
     empty(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return conjunction( ::std::get<Indexes>(parsers_).empty() ... );
+        return detail::conjunction( ::std::get<Indexes>(parsers_).empty() ... );
     }
     template < ::std::size_t ... Indexes >
     constexpr bool
     want_more(::std::integer_sequence<::std::size_t, Indexes...> const&) const
     {
-        return disjunction( ::std::get<Indexes>(parsers_).want_more() ... );
+        return detail::disjunction( ::std::get<Indexes>(parsers_).want_more() ... );
     }
 
     template < ::std::size_t ... Indexes >
@@ -487,7 +487,7 @@ struct sequental_parser : composite_parser_base< sequental_parser<Parsers...>, P
     bool
     empty() const
     {
-        return current_ == 0 && detail::empty(state_of(current_));
+        return current_ == 0 && parsers::empty(state_of(current_));
     }
 
     constexpr bool
@@ -499,7 +499,7 @@ struct sequental_parser : composite_parser_base< sequental_parser<Parsers...>, P
     bool
     failed() const
     {
-        return failed_ || detail::failed(current_state());
+        return failed_ || parsers::failed(current_state());
     }
 
     bool
@@ -511,7 +511,7 @@ struct sequental_parser : composite_parser_base< sequental_parser<Parsers...>, P
     bool
     want_more() const
     {
-        return detail::want_more(current_state());
+        return parsers::want_more(current_state());
     }
 
     feed_result
@@ -519,12 +519,12 @@ struct sequental_parser : composite_parser_base< sequental_parser<Parsers...>, P
     {
         if (want_more()) {
             auto res = parser_feeders(indexes{})[current_](parsers_, c);
-            if (detail::done(res.first)) {
+            if (parsers::done(res.first)) {
                 ++current_;
                 if (!res.second)
                     return feed_char(c);
             }
-            if (detail::failed(res.first)) {
+            if (parsers::failed(res.first)) {
                 failed_ = true;
             }
             return { current_state(), res.second };
@@ -594,12 +594,10 @@ private:
 };
 
 
-} /* namespace detail */
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
 
-#endif /* TIP_IRI_PARSERS_COMPOSITE_PARSERS_HPP_ */
+#endif /* PUSHKIN_PARSERS_COMPOSITE_PARSERS_HPP_ */

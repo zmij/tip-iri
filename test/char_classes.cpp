@@ -6,7 +6,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <tip/iri/detail/char_classes.hpp>
+#include <pushkin/parsers/char_classes.hpp>
 
 namespace tip {
 namespace iri {

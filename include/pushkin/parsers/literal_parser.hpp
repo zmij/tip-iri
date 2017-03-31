@@ -5,15 +5,14 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_PARSERS_LITERAL_PARSER_HPP_
-#define TIP_IRI_PARSERS_LITERAL_PARSER_HPP_
+#ifndef PUSHKIN_PARSERS_LITERAL_PARSER_HPP_
+#define PUSHKIN_PARSERS_LITERAL_PARSER_HPP_
 
-#include <tip/iri/parsers/parser_state_base.hpp>
+#include <pushkin/parsers/parser_state_base.hpp>
 #include <pushkin/meta/char_sequence.hpp>
 
-namespace tip {
-namespace iri {
-inline namespace v2 {
+namespace psst {
+namespace parsers {
 
 namespace detail {
 
@@ -29,8 +28,8 @@ struct literal_parser_value {
 };
 
 template < char ... Chars >
-struct literal_parser_value< false, ::psst::meta::char_sequence_literal<Chars...> > {
-    using sequence          = ::psst::meta::char_sequence_literal<Chars...>;
+struct literal_parser_value< false, meta::char_sequence_literal<Chars...> > {
+    using sequence          = meta::char_sequence_literal<Chars...>;
     using value_type        = ::std::string;
 
     value_type const&
@@ -42,7 +41,7 @@ struct literal_parser_value< false, ::psst::meta::char_sequence_literal<Chars...
 };
 
 template < char Char >
-struct literal_parser_value< false, ::psst::meta::char_sequence_literal<Char> > {
+struct literal_parser_value< false, meta::char_sequence_literal<Char> > {
     using value_type        = char;
 
     value_type
@@ -57,18 +56,16 @@ template < typename Final, typename T, bool IgnoreValue >
 struct literal_parser_impl;
 
 template < typename Final, char ... Chars, bool IgnoreValue >
-struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Chars...>, IgnoreValue>
-    : detail::parser_state_base<Final>,
-      literal_parser_value<IgnoreValue, ::psst::meta::char_sequence_literal<Chars...>> {
+struct literal_parser_impl<Final, meta::char_sequence_literal<Chars...>, IgnoreValue>
+    : parser_state_base<Final>,
+      literal_parser_value<IgnoreValue, meta::char_sequence_literal<Chars...>> {
 
     using value_base        = literal_parser_value<IgnoreValue,
-                                ::psst::meta::char_sequence_literal<Chars...>>;
+                                meta::char_sequence_literal<Chars...>>;
 
     using value_type        = typename value_base::value_type;
-    using string_literal    = ::psst::meta::char_sequence_literal<Chars...>;
-    using base_type         = detail::parser_state_base<Final>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using string_literal    = meta::char_sequence_literal<Chars...>;
+    using base_type         = parser_state_base<Final>;
 
     constexpr literal_parser_impl() : current_{ string_literal::static_begin() } {}
 
@@ -118,17 +115,15 @@ private:
 };
 
 template < typename Final, char Char, bool IgnoreValue >
-struct literal_parser_impl<Final, ::psst::meta::char_sequence_literal<Char>, IgnoreValue>
-    : detail::parser_state_base<Final>,
-      literal_parser_value<IgnoreValue, ::psst::meta::char_sequence_literal<Char>> {
+struct literal_parser_impl<Final, meta::char_sequence_literal<Char>, IgnoreValue>
+    : parser_state_base<Final>,
+      literal_parser_value<IgnoreValue, meta::char_sequence_literal<Char>> {
 
     using value_base        = literal_parser_value<IgnoreValue,
-                                ::psst::meta::char_sequence_literal<Char>>;
+                                meta::char_sequence_literal<Char>>;
 
     using value_type        = typename value_base::value_type;
-    using base_type         = detail::parser_state_base<Final>;
-    using parser_state      = detail::parser_state;
-    using feed_result       = detail::feed_result;
+    using base_type         = parser_state_base<Final>;
 
     static constexpr char check_value = Char;
 
@@ -191,10 +186,9 @@ struct literal_str_parser_v
               literal_str_parser<Str>, ::psst::meta::make_char_literal_s<Str>, false> {};
 
 
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
-#endif /* TIP_IRI_PARSERS_LITERAL_PARSER_HPP_ */
+#endif /* PUSHKIN_PARSERS_LITERAL_PARSER_HPP_ */

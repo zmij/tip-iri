@@ -76,10 +76,13 @@ struct ipv6_address {
     using element           = ::std::uint16_t;
     static constexpr auto element_size = sizeof(element) * 8;
     static constexpr auto size = 128 / element_size;
+
     using repr              = element[ size ];
     using init_list         = ::std::initializer_list<element>;
     using iterator          = element*;
     using const_iterator    = element const*;
+
+    static constexpr repr empty_addr{0};
 
     repr data;
 
@@ -171,6 +174,10 @@ struct ipv6_address {
     constexpr const_iterator
     end() const
     { return data + size; }
+
+    constexpr bool
+    empty() const
+    { return data == empty_addr; }
 };
 
 ::std::ostream&

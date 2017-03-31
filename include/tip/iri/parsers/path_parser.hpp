@@ -15,6 +15,7 @@
 namespace tip {
 namespace iri {
 inline namespace v2 {
+namespace parsers {
 
 template <>
 struct parser<iri_part::path_segment>
@@ -26,20 +27,49 @@ struct parser<iri_part::path_nc_segment>
 
 template < typename OutType, iri_part SegmentType = iri_part::path_segment >
 struct absolute_path_parser
-        : detail::repetition_parser<
-            detail::sequental_parser<
-                literal_parser_v<'/'>,
+        : ::psst::parsers::repetition_parser<
+            ::psst::parsers::sequental_parser<
+                ::psst::parsers::literal_parser_v<'/'>,
                 parser< SegmentType >
             >,
             OutType
         > {};
 
+template < iri_part SegmentType >
+struct absolute_path_parser< path, SegmentType >
+    : ::psst::parsers::repetition_parser<
+        ::psst::parsers::sequental_parser<
+            ::psst::parsers::literal_parser<'/'>,
+            parser< SegmentType >
+        >,
+        path
+    > {
+
+    using base_type = ::psst::parsers::repetition_parser<
+                            ::psst::parsers::sequental_parser<
+                                 ::psst::parsers::literal_parser<'/'>,
+                                 parser< SegmentType >
+                            >,
+                            path
+                        >;
+
+    absolute_path_parser() : base_type{ path{true} } {}
+};
+
+} /* namespace parsers */
+} /* namespace v2 */
+} /* namespace iri */
+} /* namespace tip */
+
+
+namespace psst {
+namespace parsers {
 namespace detail {
 
 template <>
-struct appender<path, ::std::string> {
+struct appender< ::tip::iri::path, ::std::string> {
     static void
-    append(path& s, ::std::string const& segment)
+    append(::tip::iri::path& s, ::std::string const& segment)
     {
         if (!segment.empty()) {
             s.push_back(segment);
@@ -48,33 +78,8 @@ struct appender<path, ::std::string> {
 };
 
 } /* namespace detail */
-
-
-template < iri_part SegmentType >
-struct absolute_path_parser< path, SegmentType >
-    : detail::repetition_parser<
-        detail::sequental_parser<
-            literal_parser<'/'>,
-            parser< SegmentType >
-        >,
-        path
-    > {
-
-    using base_type = detail::repetition_parser<
-                                detail::sequental_parser<
-                                    literal_parser<'/'>,
-                                    parser< SegmentType >
-                                >,
-                                path
-                            >;
-
-    absolute_path_parser() : base_type{ path{true} } {}
-};
-
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
-
+} /* namespace parsers */
+} /* namespace psst */
 
 
 #endif /* TIP_IRI_PARSERS_PATH_PARSER_HPP_ */

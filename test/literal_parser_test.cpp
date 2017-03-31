@@ -6,10 +6,11 @@
  */
 
 #include <gtest/gtest.h>
-#include <tip/iri/parsers/literal_parser.hpp>
+#include <pushkin/parsers/literal_parser.hpp>
 
-namespace tip {
-namespace iri {
+namespace psst {
+namespace parsers {
+
 namespace test {
 
 namespace {
@@ -101,6 +102,6 @@ TEST(Parser, LiteralCharParser)
 
 } /* namespace test */
 
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 

@@ -6,9 +6,9 @@
  */
 
 #include <gtest/gtest.h>
-#include <tip/iri/parsers/composite_parsers.hpp>
-#include <tip/iri/parsers/repetition_parser.hpp>
-#include <tip/iri/parsers/char_class_parser.hpp>
+#include <pushkin/parsers/composite_parsers.hpp>
+#include <pushkin/parsers/repetition_parser.hpp>
+#include <pushkin/parsers/char_class_parser.hpp>
 #include <tip/iri/parsers/hex_encoded_parser.hpp>
 #include <tip/iri/detail/iri_part.hpp>
 
@@ -16,7 +16,8 @@ namespace tip {
 namespace iri {
 namespace test {
 
-using path_char_parser = char_class_parser<iri_part, iri_part::path_segment>;
+using path_char_parser = ::psst::parsers::char_class_parser<iri_part, iri_part::path_segment>;
+using ::psst::parsers::parse_end;
 
 TEST(Parser, CharClassParser)
 {
@@ -40,14 +41,14 @@ TEST(Parser, CharClassParser)
     EXPECT_TRUE(p.failed());
 }
 
-using phcar_pct_ucs_parser = detail::alternatives_parser<
+using phcar_pct_ucs_parser = ::psst::parsers::alternatives_parser<
             path_char_parser,
             pct_encoded_sequence_parser,
             hex_encoded_ucs_parser
         >;
 
 using path_segment_parser =
-        detail::repetition_parser<phcar_pct_ucs_parser, ::std::string>;
+        ::psst::parsers::repetition_parser<phcar_pct_ucs_parser, ::std::string>;
 
 TEST(Parser, EscapedClassParser)
 {

@@ -8,7 +8,7 @@
 #ifndef TIP_IRI_DETAIL_ESCAPE_STRING_HPP_
 #define TIP_IRI_DETAIL_ESCAPE_STRING_HPP_
 
-#include <tip/iri/detail/char_class.hpp>
+#include <pushkin/parsers/char_class.hpp>
 #include <iostream>
 #include <iomanip>
 
@@ -18,19 +18,23 @@ inline namespace v2 {
 
 template < typename T, T Filter >
 struct char_escaper {
-    using classificator = typename char_classification_traits<T>::type;
+    using classificator         = typename ::psst::parsers::char_classification_traits<T>::type;
+
     static constexpr T filter = Filter;
 
     template < typename InputIterator >
     static void
     escape(::std::ostream& os, InputIterator begin, InputIterator end)
     {
+        using ::psst::parsers::char_classification;
+        using ::psst::parsers::codepoint_size;
+        using ::psst::parsers::char_type;
         while (begin != end) {
             auto cls = classificator::classify(*begin);
             if (any(cls & filter)) {
                 os.put(*begin++);
             } else {
-                auto c_cls = char_classification::classify(*begin);
+                auto c_cls = ::psst::parsers::char_classification::classify(*begin);
                 if (any( c_cls & char_type::utf_byte )) {
                     // Hex encode UTF-8 sequence
                     auto sz = codepoint_size(c_cls);

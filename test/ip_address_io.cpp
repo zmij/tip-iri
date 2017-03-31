@@ -20,7 +20,9 @@ PrintTo(ipv6_address const& val, ::std::ostream* os)
 {
     *os << val;
 }
+inline namespace v2 {
 
+namespace parsers {
 namespace test {
 
 TEST(IPAddr, IPv4)
@@ -188,5 +190,7 @@ PARSER_TEST(ip_lit_parser, IPLiteral,
 );
 
 } // namespace test
+} /* namespace parsers */
+} /* namespace v2 */
 }  /* namespace iri */
 }  /* namespace tip */

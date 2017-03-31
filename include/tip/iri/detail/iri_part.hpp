@@ -8,8 +8,8 @@
 #ifndef TIP_IRI_DETAIL_IRI_PART_HPP_
 #define TIP_IRI_DETAIL_IRI_PART_HPP_
 
-#include <tip/iri/detail/char_class.hpp>
-#include <tip/iri/detail/char_classes.hpp>
+#include <pushkin/parsers/char_class.hpp>
+#include <pushkin/parsers/char_classes.hpp>
 
 namespace tip {
 namespace iri {
@@ -19,8 +19,10 @@ inline namespace v2 {
 enum class iri_part {
     none            = 0x0000,
     schema          = 0x0001,
-    user_info       = schema            * 2,
-    reg_name        = user_info         * 2,        // Registered name (domain)
+    user            = schema            * 2,
+    password        = user              * 2,
+    user_info       = user | password   * 2,
+    reg_name        = password          * 2,        // Registered name (domain)
     ipv4_address    = reg_name          * 2,        // Literal IPv4 address
     ipv6_address    = ipv4_address      * 2,        // Literal IPv6 address
     ip_future       = ipv6_address      * 2,        // IP future literal
@@ -73,9 +75,12 @@ any(iri_part p)
 }
 
 template < typename Charset, iri_part P >
-using iri_part_class = character_class< Charset, iri_part, P, iri_part::none >;
+using iri_part_class = ::psst::parsers::character_class<
+                                Charset, iri_part, P, iri_part::none >;
 
 namespace char_classes {
+
+using namespace ::psst::parsers::char_classes;
 
 using schema_chars          = join< alnum_chars, char_sequence<'+', '-', '.'> >::type;
 
@@ -119,6 +124,8 @@ using query_val_chars       = unique_sort< join< query_key_chars, char_sequence<
 using query_delim_chars     = char_sequence<'&'>;
 
 using schema_class      = iri_part_class< schema_chars,     iri_part::schema        >;
+using user_class        = iri_part_class< reg_name_chars,   iri_part::user          >;
+using password_class    = iri_part_class< reg_name_chars,   iri_part::password      >;
 using ipv4_class        = iri_part_class< ipv4_chars,       iri_part::ipv4_address  >;
 using ipv6_class        = iri_part_class< ipv6_chars,       iri_part::ipv6_address  >;
 using reg_name_class    = iri_part_class< reg_name_chars,   iri_part::reg_name      >;
@@ -132,8 +139,10 @@ using query_delim_class = iri_part_class< query_delim_chars,iri_part::query_deli
 
 using fragment_class    = iri_part_class< fragment_chars,   iri_part::fragment      >;
 
-using iri_parts_table_base = character_class_table<128, iri_part,
+using iri_parts_table_base = ::psst::parsers::character_class_table<128, iri_part,
         schema_class,
+        user_class,
+        password_class,
         ipv4_class,
         ipv6_class,
         reg_name_class,
@@ -150,10 +159,6 @@ using iri_parts_table_base = character_class_table<128, iri_part,
 
 struct iri_char_classification : char_classes::iri_parts_table_base {};
 
-template <>
-struct char_classification_traits<iri_part> {
-    using type = iri_char_classification;
-};
 //
 template < iri_part P >
 using part_constant = ::std::integral_constant<iri_part, P>;
@@ -166,6 +171,16 @@ using part_sequence = ::std::integer_sequence<iri_part, Parts...>;
 } /* namespace iri */
 } /* namespace tip */
 
+namespace psst {
+namespace parsers {
+
+template <>
+struct char_classification_traits< ::tip::iri::iri_part> {
+    using type = ::tip::iri::iri_char_classification;
+};
+
+} /* namespace parsers */
+} /* namespace psst */
 
 
 

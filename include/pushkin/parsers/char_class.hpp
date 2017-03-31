@@ -5,17 +5,15 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_DETAIL_CHAR_CLASS_HPP_
-#define TIP_IRI_DETAIL_CHAR_CLASS_HPP_
+#ifndef PUSHKIN_DETAIL_CHAR_CLASS_HPP_
+#define PUSHKIN_DETAIL_CHAR_CLASS_HPP_
 
-#include <tip/iri/detail/char_classes.hpp>
+#include <pushkin/parsers/char_classes.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <string>
 
-namespace tip {
-namespace iri {
-
-inline namespace v2 {
+namespace psst {
+namespace parsers {
 
 enum class char_type {
     none        = 0x00,
@@ -240,10 +238,9 @@ codepoint_count(char const* str)
     return sz;
 }
 
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
-#endif /* TIP_IRI_DETAIL_CHAR_CLASS_HPP_ */
+#endif /* PUSHKIN_DETAIL_CHAR_CLASS_HPP_ */

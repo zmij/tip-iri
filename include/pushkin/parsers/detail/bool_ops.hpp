@@ -5,12 +5,11 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_PARSERS_BOOL_OPS_HPP_
-#define TIP_IRI_PARSERS_BOOL_OPS_HPP_
+#ifndef PUSHKIN_PARSERS_BOOL_OPS_HPP_
+#define PUSHKIN_PARSERS_BOOL_OPS_HPP_
 
-namespace tip {
-namespace iri {
-inline namespace v2 {
+namespace psst {
+namespace parsers {
 namespace detail {
 
 inline constexpr bool
@@ -45,8 +44,7 @@ disjunction(bool v, T ... vals)
 
 
 } /* namespace detail */
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
-#endif /* TIP_IRI_PARSERS_BOOL_OPS_HPP_ */
+#endif /* PUSHKIN_PARSERS_BOOL_OPS_HPP_ */

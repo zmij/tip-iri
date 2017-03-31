@@ -5,15 +5,13 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_DETAIL_CHAR_CLASSES_HPP_
-#define TIP_IRI_DETAIL_CHAR_CLASSES_HPP_
+#ifndef PUSHKIN_DETAIL_CHAR_CLASSES_HPP_
+#define PUSHKIN_DETAIL_CHAR_CLASSES_HPP_
 
 #include <pushkin/meta/char_sequence.hpp>
 
-namespace tip {
-namespace iri {
-
-inline namespace v2 {
+namespace psst {
+namespace parsers {
 
 namespace detail {
 template < bool, typename T, T ifTrue, T ifFalse >
@@ -125,12 +123,10 @@ using logic_ops             = make_char_sequence<logic_str>;
 
 } /* namespace char_classes */
 
-} /* namespace v2 */
 
-
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
-#endif /* TIP_IRI_DETAIL_CHAR_CLASSES_HPP_ */
+#endif /* PUSHKIN_DETAIL_CHAR_CLASSES_HPP_ */

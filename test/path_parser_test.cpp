@@ -19,11 +19,11 @@ PrintTo(path const& val, ::std::ostream* os)
     *os << val;
 }
 
-} /* namespace v2 */
+namespace parsers {
 
 namespace test {
 
-using ab_path_parser = v2::absolute_path_parser<::std::string, iri_part::path_segment >;
+using ab_path_parser = absolute_path_parser<::std::string, iri_part::path_segment >;
 PARSER_TEST(ab_path_parser, Path,
     ::testing::Values(
         ParsePath::make_test_data( "/usr", "/usr" ),
@@ -38,7 +38,7 @@ PARSER_TEST(ab_path_parser, Path,
     )
 );
 
-using ab_path_struct_parser = v2::absolute_path_parser<v2::path, iri_part::path_segment>;
+using ab_path_struct_parser = absolute_path_parser<v2::path, iri_part::path_segment>;
 PARSER_TEST(ab_path_struct_parser, PathStruct,
     ::testing::Values(
         ParsePathStruct::make_test_data( "/usr", path{true, {"usr"}} ),
@@ -57,5 +57,8 @@ PARSER_TEST(ab_path_struct_parser, PathStruct,
 
 
 } /* namespace test */
+} /* namespace parsers */
+} /* namespace v2 */
+
 } /* namespace iri */
 } /* namespace tip */

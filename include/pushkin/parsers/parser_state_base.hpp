@@ -5,20 +5,16 @@
  *      Author: zmij
  */
 
-#ifndef TIP_IRI_DETAIL_PARSER_STATE_BASE_HPP_
-#define TIP_IRI_DETAIL_PARSER_STATE_BASE_HPP_
+#ifndef PUSHKIN_PARSERS_PARSER_STATE_BASE_HPP_
+#define PUSHKIN_PARSERS_PARSER_STATE_BASE_HPP_
 
 #include <tuple>
 #include <iterator>
 
-namespace tip {
-namespace iri {
-
-inline namespace v2 {
+namespace psst {
+namespace parsers {
 
 struct ignore_value{};
-
-namespace detail {
 
 enum class parser_state {
     empty,
@@ -47,6 +43,7 @@ constexpr bool
 want_more(parser_state s)
 { return s < parser_state::done; }
 
+
 // A pair of current state and flag if the char was consumed
 using feed_result       = ::std::pair< parser_state, bool >;
 
@@ -66,23 +63,23 @@ struct parser_state_base :
 
     constexpr bool
     empty() const
-    { return detail::empty(state); }
+    { return parsers::empty(state); }
 
     constexpr bool
     done() const
-    { return detail::done(state); }
+    { return parsers::done(state); }
 
     constexpr bool
     failed() const
-    { return detail::failed(state); }
+    { return parsers::failed(state); }
 
     constexpr bool
     finished() const
-    { return detail::finished(state); }
+    { return parsers::finished(state); }
 
     constexpr bool
     want_more() const
-    { return detail::want_more(state); }
+    { return parsers::want_more(state); }
 
     constexpr ::std::size_t
     consumed_count() const
@@ -218,16 +215,12 @@ struct parse_end {
 
 };
 
+static constexpr parse_end parse_end{};
 
-} /* namespace detal */
-
-static constexpr detail::parse_end parse_end{};
-
-} /* namespace v2 */
-} /* namespace iri */
-} /* namespace tip */
+} /* namespace parsers */
+} /* namespace psst */
 
 
 
 
-#endif /* TIP_IRI_DETAIL_PARSER_STATE_BASE_HPP_ */
+#endif /* PUSHKIN_PARSERS_PARSER_STATE_BASE_HPP_ */
