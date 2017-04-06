@@ -36,6 +36,7 @@ set(BOOST_COMPONENTS
 
 find_package(Boost 1.58 COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
 
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${Boost_INCLUDE_DIR})
 add_definitions("-std=c++11")
 
